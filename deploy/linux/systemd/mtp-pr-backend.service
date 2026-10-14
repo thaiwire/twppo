@@ -1,0 +1,22 @@
+# Backend API (NestJS) — PORT/HOST และค่าอื่นจาก /opt/mtp_po_web/backend/.env (ตั้ง HOST=127.0.0.1)
+[Unit]
+Description=MTP PR - Backend API (NestJS)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mtppr
+Group=mtppr
+WorkingDirectory=/opt/mtp_po_web/backend
+ExecStart=/usr/bin/node dist/main.js
+Environment=NODE_ENV=production
+Environment=TZ=Asia/Bangkok
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

@@ -27,7 +27,8 @@
         "VatAmt": 7610.4,
         "Net": 116330.4,
         "NetText": "หนึ่งแสนหนึ่งหมื่นหกพันสามร้อยสามสิบบาทสี่สิบสตางค์",
-        "PrintedBy": "System Administrator"
+        "PrintedBy": "System Administrator",
+        "DivName": "1000 หน่วยวิศวกรรม"
       },
       {
         "Nbr": "PR0000099",
@@ -55,7 +56,8 @@
         "VatAmt": 35,
         "Net": 535,
         "NetText": "ห้าร้อยสามสิบห้าบาทถ้วน",
-        "PrintedBy": "System Administrator"
+        "PrintedBy": "System Administrator",
+        "DivName": ""
       }
     ],
     "Lines": [

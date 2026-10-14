@@ -10,10 +10,36 @@ using FastReport.Export.Image;
 using FastReport.Export.PdfSimple;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// PORT / HOST จากไฟล์ .env (เหมือน backend/frontend) — ไม่มีไฟล์/ไม่ระบุ = ใช้ "Urls" ใน appsettings.json
+// หาไฟล์ที่: โฟลเดอร์ปัจจุบัน (dotnet run) → โฟลเดอร์โปรแกรม → โฟลเดอร์แม่ (report/publish → report/.env)
+// ค่าใน environment จริงมีสิทธิ์เหนือไฟล์
+var dotEnv = LoadDotEnv(
+    Path.Combine(Directory.GetCurrentDirectory(), ".env"),
+    Path.Combine(AppContext.BaseDirectory, ".env"),
+    Path.Combine(AppContext.BaseDirectory, "..", ".env"));
+string? Setting(string key) => Environment.GetEnvironmentVariable(key) is { Length: > 0 } v ? v : dotEnv.GetValueOrDefault(key);
+if (Setting("PORT") is { } port)
+    builder.Configuration["Urls"] = $"http://{Setting("HOST") ?? "localhost"}:{port}";
+
 var app = builder.Build();
 var reportDir = Path.Combine(AppContext.BaseDirectory, "Reports");
 
-app.MapGet("/health", () => Results.Ok(new { ok = true, reports = Directory.GetFiles(reportDir, "*.frx").Select(Path.GetFileNameWithoutExtension) }));
+// แทนฟอนต์ใน template ตอนรัน (ไม่แก้ไฟล์ .frx) — ใช้บน Linux ที่ไม่มี Tahoma
+//   appsettings.json: "FontSubstitutes": { "Tahoma": "Loma" }  หรือ env: FontSubstitutes__Tahoma=Loma
+// ต้องระบุชื่อฟอนต์ที่ติดตั้งจริง: ถ้าปล่อยให้ระบบหาฟอนต์แทนเอง libgdiplus วัดความสูงข้อความไทยผิด → ข้อความที่ตัดบรรทัดหาย
+var fontSubstitutes = builder.Configuration.GetSection("FontSubstitutes").Get<Dictionary<string, string>>()
+    ?? new Dictionary<string, string>();
+fontSubstitutes = new Dictionary<string, string>(fontSubstitutes, StringComparer.OrdinalIgnoreCase);
+
+app.MapGet("/health", () => Results.Ok(new
+{
+    ok = true,
+    urls = app.Urls,
+    os = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
+    fontSubstitutes,
+    reports = Directory.GetFiles(reportDir, "*.frx").Select(Path.GetFileNameWithoutExtension),
+}));
 
 app.MapPost("/render/{name}", async (string name, HttpRequest req, ILogger<Program> log) =>
 {
@@ -30,7 +56,7 @@ app.MapPost("/render/{name}", async (string name, HttpRequest req, ILogger<Progr
     {
         using var ds = ToDataSet(tables);
         using var report = new Report();
-        report.Load(file);
+        report.LoadFromString(SubstituteFonts(await File.ReadAllTextAsync(file), fontSubstitutes));
         report.RegisterData(ds, "Data");
         foreach (DataTable t in ds.Tables)
         {
@@ -62,6 +88,42 @@ app.MapPost("/render/{name}", async (string name, HttpRequest req, ILogger<Progr
 });
 
 app.Run();
+
+// แทนชื่อฟอนต์ในข้อความ XML ของ .frx ก่อนโหลด (ทำหลังโหลดไม่ได้ — บน Linux ฟอนต์ที่ไม่มีถูกแทนเป็น DejaVu Sans
+// ตั้งแต่ตอนโหลด และชื่อเดิมหายไป) เช่น Font="Tahoma, 8pt, style=Bold" → Font="Loma, 8pt, style=Bold"
+static string SubstituteFonts(string frx, Dictionary<string, string> map)
+{
+    foreach (var (from, to) in map)
+        frx = System.Text.RegularExpressions.Regex.Replace(
+            frx,
+            $@"(Font=""\s*){System.Text.RegularExpressions.Regex.Escape(from)}(\s*,)",
+            m => m.Groups[1].Value + to + m.Groups[2].Value,
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    return frx;
+}
+
+// อ่าน KEY=VALUE จากไฟล์ .env แรกที่พบ (รองรับ # comment และค่าที่ครอบด้วย ' หรือ ")
+static Dictionary<string, string> LoadDotEnv(params string[] candidates)
+{
+    var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    var file = candidates.Select(Path.GetFullPath).FirstOrDefault(File.Exists);
+    if (file == null) return result;
+    foreach (var raw in File.ReadAllLines(file))
+    {
+        var line = raw.Trim();
+        if (line.Length == 0 || line.StartsWith('#')) continue;
+        var eq = line.IndexOf('=');
+        if (eq <= 0) continue;
+        var key = line[..eq].Trim();
+        var value = line[(eq + 1)..].Trim();
+        if (value.Length >= 2 && (value[0] == '\'' || value[0] == '"') && value[^1] == value[0])
+            value = value[1..^1];
+        else if (value.IndexOf(" #", StringComparison.Ordinal) is var hash and >= 0)
+            value = value[..hash].Trim();
+        result[key] = value;
+    }
+    return result;
+}
 
 static DataSet ToDataSet(JsonElement tables)
 {

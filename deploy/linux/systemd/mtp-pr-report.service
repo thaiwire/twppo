@@ -1,0 +1,26 @@
+# Report service (FastReport, .NET 8 self-contained) — PORT/HOST จาก /opt/mtp_po_web/report/.env (ไม่มี = localhost:5100)
+[Unit]
+Description=MTP PR - Report (FastReport)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mtppr
+Group=mtppr
+WorkingDirectory=/opt/mtp_po_web/report/publish
+ExecStart=/opt/mtp_po_web/report/publish/ReportService
+Environment=ASPNETCORE_ENVIRONMENT=Production
+# Linux ไม่มีฟอนต์ Tahoma (ที่ template ใช้) — แทนด้วย Loma จาก fonts-thai-tlwg
+# ต้องระบุชื่อฟอนต์จริง ไม่อย่างนั้นข้อความไทยที่ตัดบรรทัดจะหาย
+Environment=FontSubstitutes__Tahoma=Loma
+# เวลาที่พิมพ์ในรายงาน (DateTime.Now)
+Environment=TZ=Asia/Bangkok
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

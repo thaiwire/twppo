@@ -15,6 +15,11 @@ Browser ──► Next.js (/api/* rewrite) ──► NestJS ──► SQL Server
                                            └─► FastReport service (Reports/PR.frx → PDF)
 ```
 
+> 🚀 **ติดตั้งใช้งานจริง:** Windows Server 2019 → [install.md](install.md) · Ubuntu Server 24.04 → [installubuntu.md](installubuntu.md) (สคริปต์อยู่ใน `deploy/`)
+>
+> 📘 **คู่มือสอนเขียนระบบนี้ทีละขั้นตอน (ด้วยมือ):** [stepbystep.md](stepbystep.md)
+> สร้างจาก `docs/stepbystep-src/` — แก้โค้ดแล้วอัปเดตคู่มือด้วย `python docs/stepbystep-src/build.py .`
+
 ## ตารางที่ใช้
 
 | ตาราง | ใช้ทำอะไร |

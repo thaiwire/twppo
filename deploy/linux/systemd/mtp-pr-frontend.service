@@ -1,0 +1,21 @@
+# Frontend (Next.js) — PORT/HOST จาก /opt/mtp_po_web/frontend/.env.local (ตั้ง HOST=127.0.0.1 ให้ nginx เป็นทางเข้าเดียว)
+[Unit]
+Description=MTP PR - Frontend (Next.js)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mtppr
+Group=mtppr
+WorkingDirectory=/opt/mtp_po_web/frontend
+ExecStart=/usr/bin/node scripts/next.mjs start
+Environment=NODE_ENV=production
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

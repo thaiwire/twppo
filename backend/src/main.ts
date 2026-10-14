@@ -15,6 +15,7 @@ async function bootstrap() {
     origin: (process.env.CORS_ORIGIN ?? 'http://localhost:3000').split(','),
     credentials: true,
   });
-  await app.listen(process.env.PORT ?? 4000);
+  // HOST=127.0.0.1 บน server จริง → รับเฉพาะ request จากเครื่องตัวเอง (ผ่าน IIS/Next.js เท่านั้น)
+  await app.listen(process.env.PORT ?? 4000, process.env.HOST ?? '0.0.0.0');
 }
 await bootstrap();

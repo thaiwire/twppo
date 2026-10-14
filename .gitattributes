@@ -1,0 +1,6 @@
+# ไฟล์ที่รันบน Linux ต้องเป็น LF เสมอ (CRLF ทำให้ bash/systemd อ่านผิด)
+*.sh       text eol=lf
+*.service  text eol=lf
+deploy/linux/** text eol=lf
+# สคริปต์ PowerShell บันทึกเป็น UTF-8 with BOM (อย่าให้ git แปลง encoding)
+*.ps1      text eol=crlf

@@ -12,9 +12,14 @@ backend/src/generated/
 # .NET
 report/bin/
 report/obj/
+report/publish/
+
+# deploy: log ของ Windows service (NSSM)
+logs/
 
 # env files (มีรหัสผ่านฐานข้อมูล — ห้าม commit)
 .env
 .env.local
 !.env.example
 test-users.local.md
+*.md
