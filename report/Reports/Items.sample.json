@@ -1,0 +1,53 @@
+{
+  "tables": {
+    "Header": [
+      {
+        "Title": "รายงานรหัสสินค้า",
+        "Filter": "ค้นหา: \"A00\"   สถานะ: ใช้งาน",
+        "Note": "",
+        "PrintedBy": "ผู้ทดสอบ (อนุมัติ)",
+        "PrintedAt": "14/10/2569 10:30",
+        "Count": 3,
+        "Total": 3
+      }
+    ],
+    "Rows": [
+      {
+        "No": 1,
+        "Code": "2A0150",
+        "Name": "สั่งทำ Housing Bearing",
+        "Group": "oth",
+        "Um": "set",
+        "Price": 1100,
+        "StdCost": 1100,
+        "CurCost": 0,
+        "Vend": "A0008",
+        "Site": "mapt"
+      },
+      {
+        "No": 2,
+        "Code": "2C0255",
+        "Name": "พันขดลวดมอเตอร์เครน 2 สปีด",
+        "Group": "oth",
+        "Um": "EA.",
+        "Price": 8900,
+        "StdCost": 8900,
+        "CurCost": 8900,
+        "Vend": "t0094",
+        "Site": "mapt"
+      },
+      {
+        "No": 3,
+        "Code": "5A0101",
+        "Name": "ACCELERATOR AC-131",
+        "Group": "RAWM",
+        "Um": "kgs.",
+        "Price": 1500,
+        "StdCost": 1234.5,
+        "CurCost": 1500,
+        "Vend": "",
+        "Site": "mapt"
+      }
+    ]
+  }
+}

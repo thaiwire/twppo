@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" DoublePass="true" ReportInfo.Name="Vendors" ReportInfo.Author="mtp_po_web">
+  <Dictionary>
+    <TableDataSource Name="Header" ReferenceName="Data.Header" DataType="System.Int32" Enabled="true">
+      <Column Name="Title" DataType="System.String"/>
+      <Column Name="Filter" DataType="System.String"/>
+      <Column Name="Note" DataType="System.String"/>
+      <Column Name="PrintedBy" DataType="System.String"/>
+      <Column Name="PrintedAt" DataType="System.String"/>
+      <Column Name="Count" DataType="System.Decimal"/>
+      <Column Name="Total" DataType="System.Decimal"/>
+    </TableDataSource>
+    <TableDataSource Name="Rows" ReferenceName="Data.Rows" DataType="System.Int32" Enabled="true">
+      <Column Name="No" DataType="System.Decimal"/>
+      <Column Name="Code" DataType="System.String"/>
+      <Column Name="Name" DataType="System.String"/>
+      <Column Name="Address" DataType="System.String"/>
+      <Column Name="Tel" DataType="System.String"/>
+      <Column Name="TaxId" DataType="System.String"/>
+      <Column Name="Credit" DataType="System.String"/>
+      <Column Name="Vat" DataType="System.String"/>
+      <Column Name="Status" DataType="System.String"/>
+    </TableDataSource>
+  </Dictionary>
+  <ReportPage Name="Page1" PaperWidth="297" PaperHeight="210" Landscape="true" LeftMargin="10" TopMargin="10" RightMargin="10" BottomMargin="10">
+    <PageHeaderBand Name="PageHeader1" Width="1047" Height="92">
+      <TextObject Name="txtTitle" Left="0" Top="0" Width="1047" Height="26" Text="[Header.Title]" HorzAlign="Center" Font="Tahoma, 13pt, style=Bold"/>
+      <TextObject Name="txtFilter" Left="0" Top="28" Width="628.1999999999999" Height="18" Text="เงื่อนไข: [Header.Filter]" Font="Tahoma, 8pt"/>
+      <TextObject Name="txtPrinted" Left="628.1999999999999" Top="28" Width="418.8" Height="18" Text="พิมพ์โดย [Header.PrintedBy]  [Header.PrintedAt]" HorzAlign="Right" Font="Tahoma, 8pt"/>
+      <TextObject Name="txtNote" Left="0" Top="46" Width="1047" Height="18" Text="[Header.Note]" Font="Tahoma, 8pt, style=Bold" TextFill.Color="Firebrick"/>
+      <TextObject Name="hNo" Left="0" Top="66" Width="35" Height="26" Text="ที่" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hCode" Left="35" Top="66" Width="85" Height="26" Text="รหัส" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hName" Left="120" Top="66" Width="250" Height="26" Text="ชื่อผู้ขาย" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hAddress" Left="370" Top="66" Width="285" Height="26" Text="ที่อยู่" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hTel" Left="655" Top="66" Width="130" Height="26" Text="โทรศัพท์" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hTaxId" Left="785" Top="66" Width="110" Height="26" Text="เลขผู้เสียภาษี" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hCredit" Left="895" Top="66" Width="50" Height="26" Text="เครดิต" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hVat" Left="945" Top="66" Width="40" Height="26" Text="ภาษี" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hStatus" Left="985" Top="66" Width="62" Height="26" Text="สถานะ" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+    </PageHeaderBand>
+    <DataBand Name="Data1" Top="96" Width="1047" Height="18" CanGrow="true" DataSource="Rows">
+      <TextObject Name="dNo" Left="0" Top="0" Width="35" Height="18" Text="[Rows.No]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true" HorzAlign="Center" Format="Number" Format.UseLocale="false" Format.DecimalDigits="0" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
+      <TextObject Name="dCode" Left="35" Top="0" Width="85" Height="18" Text="[Rows.Code]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true"  />
+      <TextObject Name="dName" Left="120" Top="0" Width="250" Height="18" Text="[Rows.Name]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true"  />
+      <TextObject Name="dAddress" Left="370" Top="0" Width="285" Height="18" Text="[Rows.Address]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true"  />
+      <TextObject Name="dTel" Left="655" Top="0" Width="130" Height="18" Text="[Rows.Tel]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true"  />
+      <TextObject Name="dTaxId" Left="785" Top="0" Width="110" Height="18" Text="[Rows.TaxId]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true"  />
+      <TextObject Name="dCredit" Left="895" Top="0" Width="50" Height="18" Text="[Rows.Credit]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true" HorzAlign="Center" />
+      <TextObject Name="dVat" Left="945" Top="0" Width="40" Height="18" Text="[Rows.Vat]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true" HorzAlign="Center" />
+      <TextObject Name="dStatus" Left="985" Top="0" Width="62" Height="18" Text="[Rows.Status]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true" HorzAlign="Center" />
+    </DataBand>
+    <ReportSummaryBand Name="Summary1" Top="118" Width="1047" Height="24">
+      <TextObject Name="txtCount" Left="0" Top="4" Width="1047" Height="18" Text="รวม [Header.Count] รายการ" HorzAlign="Right" Font="Tahoma, 9pt, style=Bold" Format="Number" Format.UseLocale="false" Format.DecimalDigits="0" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
+    </ReportSummaryBand>
+    <PageFooterBand Name="PageFooter1" Top="146" Width="1047" Height="20">
+      <LineObject Name="footLine" Width="1047" Border.Width="0.5"/>
+      <TextObject Name="txtPage" Left="847" Top="2" Width="200" Height="18" Text="หน้า [Page#] / [TotalPages#]" HorzAlign="Right" Font="Tahoma, 7pt"/>
+    </PageFooterBand>
+  </ReportPage>
+</Report>

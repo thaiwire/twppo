@@ -1,0 +1,247 @@
+// Schema ของฐานข้อมูลเดิม (dbmtp) — ดึงมาจาก `prisma db pull` เฉพาะตารางที่ระบบ PR ใช้
+// ห้ามรัน `prisma migrate` หรือ `prisma db push` กับฐานข้อมูลนี้ — ใช้แค่ `prisma generate`
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+/// ใบเสนอซื้อ (PR) — ส่วนหัว
+model prq_mstr {
+  prq_nbr       String    @id(map: "PK_prq_mstr") @db.NVarChar(24)
+  prq_pr_date   DateTime? @db.Date
+  prq_need_date DateTime? @db.Date
+  prq_approve   Boolean?
+  prq_request   String?   @db.NVarChar(24)
+  prq_vend      String?   @db.NVarChar(24)
+  prq_remark    String?   @db.NVarChar(120)
+  prq_status    String?   @db.NVarChar(3)
+  prq_user2     String?   @db.NVarChar(24)
+  prq_entity    String?   @db.NVarChar(12)
+  prq_remark1   String?   @db.NVarChar(120)
+  prq_user1     String?   @db.NVarChar(24)
+  prq_date1     DateTime? @db.Date
+  prq_time1     String?   @db.NVarChar(24)
+  prq_disc_pct1 Decimal?  @db.Decimal(18, 4)
+  prq_disc_amt1 Decimal?  @db.Decimal(18, 4)
+  prq_vat_amt   Decimal?  @db.Decimal(18, 4)
+  prq_taxable   Boolean?
+  prq_vt_class  String?   @db.NVarChar(3)
+  ID            Int       @default(autoincrement())
+  /// หน่วยงาน (div_mstr) — เพิ่มโดยระบบเว็บ (prisma/sql/2026-10-14_div_code.sql)
+  prq_divcode   String?   @db.NVarChar(24)
+}
+
+/// ใบเสนอซื้อ (PR) — รายการสินค้า
+model prq_det {
+  prqd_nbr       String   @db.NVarChar(24)
+  prqd_part      String?  @db.NVarChar(60)
+  prqd_qty_ord   Decimal? @db.Decimal(18, 4)
+  prqd_qty_open  Decimal? @db.Decimal(18, 4)
+  prqd_um        String?  @db.NVarChar(9)
+  prqd_est_price Decimal? @db.Decimal(18, 4)
+  prqd_status    String?  @db.NVarChar(3)
+  prqd_line      Int
+  prqd_desc      String?  @db.NVarChar(120)
+  ID             Int      @default(autoincrement())
+
+  @@id([prqd_nbr, prqd_line], map: "PK_prq_det")
+}
+
+/// ค่าควบคุมฝ่ายจัดซื้อ (เลขที่ PR ล่าสุด, prefix) — ใช้เฉพาะคอลัมน์ที่ต้องการ
+model pur_ctrl {
+  id          BigInt  @id(map: "PK_pur_ctrl") @default(autoincrement())
+  purc_pr     Int?
+  purc_pr_pre String? @db.NChar(10)
+  purc_entity String? @db.NChar(10)
+}
+
+/// ผู้ขาย (แก้ไขได้จากเมนูข้อมูลหลัก — admin/manager)
+model vd_mstr {
+  vd_addr         String    @id(map: "PK_vd_mstr") @db.NVarChar(24)
+  vd_group        String?   @db.NVarChar(12)
+  vd_ap_contact   String?   @db.NVarChar(120)
+  vd_rmks         String?   @db.NVarChar(120)
+  vd_ap_acct      String?   @db.NVarChar(24)
+  vd_alias        String?   @db.NVarChar(150)
+  vd_ap_cc        String?   @db.NVarChar(12)
+  vd_pur_contact  String?   @db.NVarChar(120)
+  vd_pur_acct     String?   @db.NVarChar(24)
+  vd_pur_cc       String?   @db.NVarChar(12)
+  vd_buyer        String?   @db.NVarChar(24)
+  vd_hold         Boolean?
+  vd_last_check   DateTime? @db.Date
+  vd_partial      Boolean?
+  vd_disc_pct1    Decimal?  @db.Decimal(18, 4)
+  vd_disc_pct2    Decimal?  @db.Decimal(18, 4)
+  vd_taxable      Boolean?
+  vd_curr         String?   @db.NVarChar(9)
+  vd_cr           String?   @db.NVarChar(24)
+  vd_balance      Decimal?  @db.Decimal(18, 4)
+  vd_vt_class     String?   @db.NVarChar(3)
+  vd_user1        String?   @db.NVarChar(24)
+  vd_date1        DateTime? @db.Date
+  vd_time1        String?   @db.NVarChar(24)
+  vd_balance_base Decimal?  @db.Decimal(18, 4)
+  vd_tax_code     String?   @db.NVarChar(30)
+  vd_vl_group     String?   @db.NVarChar(6)
+  vd_vl_date      DateTime? @db.Date
+  vd_vl_frdate    DateTime? @db.Date
+  vd_vl_todate    DateTime? @db.Date
+  vd_open_date    DateTime? @db.Date
+  vd_vl_cntpo     Int?
+  vd_vl_cntlate   Int?
+  vd_vl_cntncp    Int?
+  vd_vl_point     Int?
+  vd_status       String?   @db.NVarChar(3)
+  vd_cn_rmk       String?   @db.NVarChar(300)
+  vd_cn_date      DateTime? @db.Date
+  ID              Int       @default(autoincrement())
+  vd_name         String?   @db.NChar(150)
+  vd_name1        String?   @db.NChar(150)
+  vd_line1        String?   @db.NChar(150)
+  vd_line2        String?   @db.NChar(150)
+  vd_line3        String?   @db.NChar(150)
+  vd_tel          String?   @db.NChar(100)
+  vd_fax          String?   @db.NChar(100)
+}
+
+/// สินค้า (แก้ไขได้จากเมนูข้อมูลหลัก — admin/manager)
+model it_mstr {
+  it_prod_id    String    @id(map: "PK_it_mstr") @db.NVarChar(66)
+  it_name1      String?   @db.NVarChar(120)
+  it_name2      String?   @db.NVarChar(120)
+  it_ename      String?   @db.NVarChar(120)
+  it_prod_group String?   @db.NVarChar(12)
+  it_um         String?   @db.NVarChar(24)
+  it_min_qty    Decimal?  @db.Decimal(18, 4)
+  it_max_qty    Decimal?  @db.Decimal(18, 4)
+  it_rtns_cc    String?   @db.NVarChar(12)
+  it_cs_cc      String?   @db.NVarChar(12)
+  it_sls_acct   String?   @db.NVarChar(24)
+  it_sls_cc     String?   @db.NVarChar(12)
+  it_ap_acct    String?   @db.NVarChar(24)
+  it_ap_cc      String?   @db.NVarChar(12)
+  it_pur_acct   String?   @db.NVarChar(24)
+  it_pur_cc     String?   @db.NVarChar(12)
+  it_inv_acct   String?   @db.NVarChar(24)
+  it_inv_cc     String?   @db.NVarChar(12)
+  it_cog_acct   String?   @db.NVarChar(24)
+  it_cog_cc     String?   @db.NVarChar(12)
+  it_std        Decimal?  @db.Decimal(18, 4)
+  it_alt_conv   Decimal?  @db.Decimal(18, 4)
+  it_alt_um     String?   @db.NVarChar(24)
+  it_lc         String?   @db.NVarChar(24)
+  it_lot_ser    String?   @db.NVarChar(3)
+  it_sfty_stk   Decimal?  @db.Decimal(18, 4)
+  it_site       String?   @db.NVarChar(12)
+  it_vend       String?   @db.NVarChar(24)
+  it_re_point   Decimal?  @db.Decimal(18, 4)
+  it_cur_date   DateTime? @db.Date
+  it_taxable    Boolean?
+  it_vat_class  String?   @db.NVarChar(3)
+  it_pur_lead   Int?
+  it_std_date   DateTime? @db.Date
+  it_cur        Decimal?  @db.Decimal(18, 4)
+  it_apds_acct  String?   @db.NVarChar(24)
+  it_apds_cc    String?   @db.NVarChar(12)
+  it_ar_acct    String?   @db.NVarChar(24)
+  it_ar_cc      String?   @db.NVarChar(12)
+  it_cs_acct    String?   @db.NVarChar(24)
+  it_vat        Boolean?
+  it_disc_acct  String?   @db.NVarChar(24)
+  it_disc_cc    String?   @db.NVarChar(12)
+  it_entity     String?   @db.NVarChar(12)
+  it_rtns_acct  String?   @db.NVarChar(24)
+  it_price      Decimal?  @db.Decimal(18, 4)
+  it_abc        String?   @db.NVarChar(3)
+  it_cyc_int    Decimal?  @db.Decimal(18, 4)
+  it_xqty_all   Decimal?  @db.Decimal(18, 4)
+  it_xqty_chg   Decimal?  @db.Decimal(18, 4)
+  it_user1      String?   @db.NVarChar(24)
+  it_date1      DateTime? @db.Date
+  it_time1      String?   @db.NVarChar(24)
+  it_disc_pct   Decimal?  @db.Decimal(18, 4)
+  it_rmk_1      String?   @db.NVarChar(150)
+  it_rmk_2      String?   @db.NVarChar(150)
+  it_rmk_3      String?   @db.NVarChar(150)
+  it_rmk_4      String?   @db.NVarChar(150)
+  it_rmk_5      String?   @db.NVarChar(150)
+  it_disc_amt   Decimal?  @db.Decimal(18, 4)
+  it_prod_line  String?   @db.NVarChar(12)
+  it_pm_code    String?   @db.NVarChar(3)
+  it_phantom    Boolean?
+  it_asst_type  String?   @db.NVarChar(3)
+  it_fa         String?   @db.NVarChar(6)
+  it_mvgroup    String?   @db.NVarChar(27)
+  it_sale_code  String?   @db.NVarChar(36)
+  it_mrp        Boolean?
+  it_cer_1      String?   @db.NVarChar(240)
+  it_cer_2      String?   @db.NVarChar(240)
+  it_cer_3      String?   @db.NVarChar(240)
+  it_cer_4      String?   @db.NVarChar(240)
+  it_cer_5      String?   @db.NVarChar(240)
+  it_cer_6      String?   @db.NVarChar(240)
+  it_cer_7      String?   @db.NVarChar(240)
+  it_cer_8      String?   @db.NVarChar(240)
+  it_cer_9      String?   @db.NVarChar(240)
+  it_cer_10     String?   @db.NVarChar(240)
+  it_cer_11     String?   @db.NVarChar(240)
+  it_cer_12     String?   @db.NVarChar(240)
+  it_mv_cost    Decimal?  @db.Decimal(18, 4)
+  it_mv_date1   DateTime? @db.Date
+  it_costavg    Decimal?  @db.Decimal(18, 4)
+  it_open_yn    Boolean?
+  ID            Int       @default(autoincrement())
+}
+
+/// บริษัท / entity (แก้ไขได้จากเมนูข้อมูลหลัก — admin/manager)
+model en_mstr {
+  en_entity  String    @id(map: "PK_en_mstr") @db.NVarChar(12)
+  en_name    String?   @db.NVarChar(120)
+  en_primary Boolean?
+  en_adj_bs  Boolean?
+  en_curr    String?   @db.NVarChar(9)
+  en_user1   String?   @db.NVarChar(24)
+  en_date1   DateTime? @db.Date
+  en_time1   String?   @db.NVarChar(24)
+  en_last_tx Int?
+  ID         Int       @default(autoincrement())
+}
+
+/// ประเภทภาษี (อ่านอย่างเดียว)
+model vt_mstr {
+  vt_class   String   @id(map: "PK_vt_mstr") @db.NVarChar(3)
+  vt_tax_pct Decimal? @db.Decimal(18, 4)
+  vt_desc    String?  @db.NVarChar(120)
+  vt_primary Boolean?
+}
+
+/// ผู้ใช้งานเว็บ (รหัสผ่านเป็น bcrypt)
+model app_user {
+  id            Int      @id(map: "PK__app_user__3213E83F2D0706E1") @default(autoincrement())
+  username      String   @unique(map: "UQ_app_user_username") @db.NVarChar(50)
+  password_hash String   @db.NVarChar(255)
+  display_name  String?  @db.NVarChar(100)
+  role          String   @default("user", map: "DF__app_user__role__3E2826D9") @db.NVarChar(20)
+  is_active     Boolean  @default(true, map: "DF__app_user__is_act__3F1C4B12")
+  created_at    DateTime @default(dbgenerated("sysutcdatetime()"), map: "DF__app_user__create__40106F4B")
+  updated_at    DateTime @default(dbgenerated("sysutcdatetime()"), map: "DF__app_user__update__41049384")
+  userlevel     String?  @db.NChar(10)
+  /// หน่วยงานของผู้ใช้ (ไม่บังคับ) — มีค่า = เห็นเฉพาะ PR ของหน่วยงานนี้
+  div_code      String?  @db.NVarChar(24)
+}
+
+/// หน่วยงาน (แก้ไขได้จากเมนูข้อมูลหลัก — admin/manager)
+model div_mstr {
+  div_code  String    @id(map: "PK_div_mstr") @db.NVarChar(24)
+  div_desc  String?   @db.NVarChar(60)
+  div_date1 DateTime? @db.Date
+  div_time1 String?   @db.NVarChar(24)
+  div_user1 String?   @db.NVarChar(24)
+}

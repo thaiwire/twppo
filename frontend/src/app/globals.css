@@ -1,0 +1,16 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #f3f4f6;
+  font-family: "Sarabun", "Leelawadee UI", "Tahoma", -apple-system, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

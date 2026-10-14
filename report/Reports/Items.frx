@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" DoublePass="true" ReportInfo.Name="Items" ReportInfo.Author="mtp_po_web">
+  <Dictionary>
+    <TableDataSource Name="Header" ReferenceName="Data.Header" DataType="System.Int32" Enabled="true">
+      <Column Name="Title" DataType="System.String"/>
+      <Column Name="Filter" DataType="System.String"/>
+      <Column Name="Note" DataType="System.String"/>
+      <Column Name="PrintedBy" DataType="System.String"/>
+      <Column Name="PrintedAt" DataType="System.String"/>
+      <Column Name="Count" DataType="System.Decimal"/>
+      <Column Name="Total" DataType="System.Decimal"/>
+    </TableDataSource>
+    <TableDataSource Name="Rows" ReferenceName="Data.Rows" DataType="System.Int32" Enabled="true">
+      <Column Name="No" DataType="System.Decimal"/>
+      <Column Name="Code" DataType="System.String"/>
+      <Column Name="Name" DataType="System.String"/>
+      <Column Name="Group" DataType="System.String"/>
+      <Column Name="Um" DataType="System.String"/>
+      <Column Name="Price" DataType="System.Decimal"/>
+      <Column Name="StdCost" DataType="System.Decimal"/>
+      <Column Name="CurCost" DataType="System.Decimal"/>
+      <Column Name="Vend" DataType="System.String"/>
+      <Column Name="Site" DataType="System.String"/>
+    </TableDataSource>
+  </Dictionary>
+  <ReportPage Name="Page1" PaperWidth="297" PaperHeight="210" Landscape="true" LeftMargin="10" TopMargin="10" RightMargin="10" BottomMargin="10">
+    <PageHeaderBand Name="PageHeader1" Width="1047" Height="92">
+      <TextObject Name="txtTitle" Left="0" Top="0" Width="1047" Height="26" Text="[Header.Title]" HorzAlign="Center" Font="Tahoma, 13pt, style=Bold"/>
+      <TextObject Name="txtFilter" Left="0" Top="28" Width="628.1999999999999" Height="18" Text="เงื่อนไข: [Header.Filter]" Font="Tahoma, 8pt"/>
+      <TextObject Name="txtPrinted" Left="628.1999999999999" Top="28" Width="418.8" Height="18" Text="พิมพ์โดย [Header.PrintedBy]  [Header.PrintedAt]" HorzAlign="Right" Font="Tahoma, 8pt"/>
+      <TextObject Name="txtNote" Left="0" Top="46" Width="1047" Height="18" Text="[Header.Note]" Font="Tahoma, 8pt, style=Bold" TextFill.Color="Firebrick"/>
+      <TextObject Name="hNo" Left="0" Top="66" Width="35" Height="26" Text="ที่" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hCode" Left="35" Top="66" Width="110" Height="26" Text="รหัสสินค้า" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hName" Left="145" Top="66" Width="350" Height="26" Text="ชื่อสินค้า" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hGroup" Left="495" Top="66" Width="70" Height="26" Text="กลุ่ม" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hUm" Left="565" Top="66" Width="60" Height="26" Text="หน่วย" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hPrice" Left="625" Top="66" Width="90" Height="26" Text="ราคา" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hStdCost" Left="715" Top="66" Width="90" Height="26" Text="ต้นทุนมาตรฐาน" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hCurCost" Left="805" Top="66" Width="90" Height="26" Text="ต้นทุนล่าสุด" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hVend" Left="895" Top="66" Width="90" Height="26" Text="ผู้ขายหลัก" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+      <TextObject Name="hSite" Left="985" Top="66" Width="62" Height="26" Text="Site" Border.Lines="All" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold" WordWrap="true"/>
+    </PageHeaderBand>
+    <DataBand Name="Data1" Top="96" Width="1047" Height="18" CanGrow="true" DataSource="Rows">
+      <TextObject Name="dNo" Left="0" Top="0" Width="35" Height="18" Text="[Rows.No]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true" HorzAlign="Center" Format="Number" Format.UseLocale="false" Format.DecimalDigits="0" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
+      <TextObject Name="dCode" Left="35" Top="0" Width="110" Height="18" Text="[Rows.Code]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true"  />
+      <TextObject Name="dName" Left="145" Top="0" Width="350" Height="18" Text="[Rows.Name]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true"  />
+      <TextObject Name="dGroup" Left="495" Top="0" Width="70" Height="18" Text="[Rows.Group]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true"  />
+      <TextObject Name="dUm" Left="565" Top="0" Width="60" Height="18" Text="[Rows.Um]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true" HorzAlign="Center" />
+      <TextObject Name="dPrice" Left="625" Top="0" Width="90" Height="18" Text="[Rows.Price]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true" HorzAlign="Right" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
+      <TextObject Name="dStdCost" Left="715" Top="0" Width="90" Height="18" Text="[Rows.StdCost]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true" HorzAlign="Right" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
+      <TextObject Name="dCurCost" Left="805" Top="0" Width="90" Height="18" Text="[Rows.CurCost]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true" HorzAlign="Right" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
+      <TextObject Name="dVend" Left="895" Top="0" Width="90" Height="18" Text="[Rows.Vend]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true"  />
+      <TextObject Name="dSite" Left="985" Top="0" Width="62" Height="18" Text="[Rows.Site]" Border.Lines="All" Border.Color="Silver" CanGrow="true" GrowToBottom="true" Padding="3, 2, 3, 0" Font="Tahoma, 8pt" WordWrap="true" HorzAlign="Center" />
+    </DataBand>
+    <ReportSummaryBand Name="Summary1" Top="118" Width="1047" Height="24">
+      <TextObject Name="txtCount" Left="0" Top="4" Width="1047" Height="18" Text="รวม [Header.Count] รายการ" HorzAlign="Right" Font="Tahoma, 9pt, style=Bold" Format="Number" Format.UseLocale="false" Format.DecimalDigits="0" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
+    </ReportSummaryBand>
+    <PageFooterBand Name="PageFooter1" Top="146" Width="1047" Height="20">
+      <LineObject Name="footLine" Width="1047" Border.Width="0.5"/>
+      <TextObject Name="txtPage" Left="847" Top="2" Width="200" Height="18" Text="หน้า [Page#] / [TotalPages#]" HorzAlign="Right" Font="Tahoma, 7pt"/>
+    </PageFooterBand>
+  </ReportPage>
+</Report>

@@ -1,0 +1,145 @@
+"use client";
+
+import { Alert, Col, Divider, Form, Input, Radio, Row, Select, Switch } from "antd";
+import { useMe } from "@/components/AuthContext";
+import { useNewDefaults } from "@/components/master/useNewDefaults";
+import { divisionOptions, useMaster } from "@/lib/master";
+
+const ROLE_OPTIONS = [
+  { value: "user", label: "user — สร้าง/แก้ไข/พิมพ์ PR" },
+  { value: "manager", label: "manager — + อนุมัติ PR, ข้อมูลหลัก" },
+  { value: "admin", label: "admin — + จัดการผู้ใช้" },
+];
+
+const DEFAULTS = { role: "user", active: true };
+
+const section = (text: string) => (
+  <Divider titlePlacement="start" style={{ margin: "8px 0 16px" }}>
+    {text}
+  </Divider>
+);
+
+/** ช่องกรอกข้อมูลผู้ใช้ (app_user) */
+export default function UserFields({ editing }: { editing: boolean }) {
+  const me = useMe();
+  const master = useMaster();
+  const username = Form.useWatch<string | undefined>("code");
+  // แก้บัญชีตัวเอง: เปลี่ยนระดับ/ปิดใช้งานไม่ได้ (backend ตรวจซ้ำ)
+  const self = editing && !!username && username.toLowerCase() === me.username.toLowerCase();
+  useNewDefaults(editing, DEFAULTS);
+
+  return (
+    <>
+      {section("บัญชีผู้ใช้")}
+      <Row gutter={16}>
+        <Col xs={24} md={10}>
+          <Form.Item
+            name="code"
+            label="ชื่อผู้ใช้ (username)"
+            extra={editing ? undefined : "3–50 ตัว: a-z, 0-9 และ . _ @ - (เปลี่ยนภายหลังไม่ได้)"}
+            rules={[
+              { required: true, whitespace: true, message: "กรุณากรอกชื่อผู้ใช้" },
+              ...(editing
+                ? []
+                : [{ pattern: /^[A-Za-z0-9._@-]{3,50}$/, message: "ใช้ได้เฉพาะ a-z, 0-9 และ . _ @ - (3–50 ตัว)" }]),
+            ]}
+          >
+            <Input maxLength={50} disabled={editing} autoFocus={!editing} autoComplete="off" />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={14}>
+          <Form.Item
+            name="displayName"
+            label="ชื่อที่แสดง"
+            rules={[{ required: true, whitespace: true, message: "กรุณากรอกชื่อที่แสดง" }]}
+          >
+            <Input maxLength={100} autoFocus={editing} />
+          </Form.Item>
+        </Col>
+      </Row>
+
+      {section("สิทธิ์การใช้งาน")}
+      {self && (
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+          title="นี่คือบัญชีของคุณ — เปลี่ยนระดับหรือปิดใช้งานตัวเองไม่ได้"
+        />
+      )}
+      <Row gutter={16}>
+        <Col xs={24} md={16}>
+          <Form.Item name="role" label="ระดับผู้ใช้ (level)" rules={[{ required: true, message: "กรุณาเลือกระดับ" }]}>
+            <Radio.Group options={ROLE_OPTIONS} disabled={self} style={{ display: "flex", flexDirection: "column", gap: 8 }} />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={8}>
+          <Form.Item
+            name="active"
+            label="สถานะ"
+            valuePropName="checked"
+            extra="ไม่ใช้งาน = login ไม่ได้ และ session ที่เปิดอยู่จะถูกตัดทันที"
+          >
+            <Switch checkedChildren="ใช้งาน" unCheckedChildren="ไม่ใช้งาน" disabled={self} />
+          </Form.Item>
+        </Col>
+      </Row>
+
+      {section("หน่วยงาน")}
+      <Row gutter={16}>
+        <Col xs={24} md={12}>
+          <Form.Item
+            name="divCode"
+            label="หน่วยงาน (ไม่บังคับ)"
+            extra="ระบุ = เห็นและทำงานได้เฉพาะใบ PR ของหน่วยงานนี้ / ไม่ระบุ = เห็นทุกหน่วยงาน"
+          >
+            <Select
+              allowClear
+              showSearch={{ optionFilterProp: "label" }}
+              placeholder="ไม่ระบุ (เห็นทุกหน่วยงาน)"
+              loading={!master}
+              options={divisionOptions(master?.divisions)}
+            />
+          </Form.Item>
+        </Col>
+      </Row>
+
+      {section(editing ? "ตั้งรหัสผ่านใหม่ (ไม่บังคับ)" : "รหัสผ่าน")}
+      <Row gutter={16}>
+        <Col xs={24} md={12}>
+          <Form.Item
+            name="password"
+            label={editing ? "รหัสผ่านใหม่" : "รหัสผ่าน"}
+            extra={editing ? "เว้นว่าง = ไม่เปลี่ยนรหัสผ่าน" : "อย่างน้อย 8 ตัวอักษร ต้องมีทั้งตัวอักษรและตัวเลข"}
+            rules={[
+              ...(editing ? [] : [{ required: true, message: "กรุณากำหนดรหัสผ่าน" }]),
+              { min: 8, message: "อย่างน้อย 8 ตัวอักษร" },
+              { max: 72, message: "ไม่เกิน 72 ตัวอักษร" },
+              { pattern: /(?=.*[A-Za-z])(?=.*\d)/, message: "ต้องมีทั้งตัวอักษรและตัวเลข" },
+            ]}
+          >
+            <Input.Password autoComplete="new-password" />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={12}>
+          <Form.Item
+            name="confirmPassword"
+            label="ยืนยันรหัสผ่าน"
+            dependencies={["password"]}
+            rules={[
+              ({ getFieldValue }) => ({
+                validator: (_, v?: string) => {
+                  const pw = getFieldValue("password") as string | undefined;
+                  if (!pw && !v) return Promise.resolve();
+                  return v === pw ? Promise.resolve() : Promise.reject(new Error("รหัสผ่านไม่ตรงกัน"));
+                },
+              }),
+            ]}
+          >
+            <Input.Password autoComplete="new-password" />
+          </Form.Item>
+        </Col>
+      </Row>
+    </>
+  );
+}

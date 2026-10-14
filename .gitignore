@@ -1,0 +1,20 @@
+# dependencies / build output
+node_modules/
+dist/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Prisma generated client
+backend/src/generated/
+
+# .NET
+report/bin/
+report/obj/
+
+# env files (มีรหัสผ่านฐานข้อมูล — ห้าม commit)
+.env
+.env.local
+!.env.example
+test-users.local.md

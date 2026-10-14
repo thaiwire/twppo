@@ -1,0 +1,38 @@
+{
+  "tables": {
+    "Header": [
+      {
+        "Title": "รายงานบริษัท",
+        "Filter": "ค้นหา: \"A00\"   สถานะ: ใช้งาน",
+        "Note": "",
+        "PrintedBy": "ผู้ทดสอบ (อนุมัติ)",
+        "PrintedAt": "14/10/2569 10:30",
+        "Count": 3,
+        "Total": 3
+      }
+    ],
+    "Rows": [
+      {
+        "No": 1,
+        "Code": "1000",
+        "Name": "TWP-NAVANAKORN",
+        "Currency": "BHT",
+        "Primary": ""
+      },
+      {
+        "No": 2,
+        "Code": "3000",
+        "Name": "TWP-MAPTAPHUD",
+        "Currency": "BHT",
+        "Primary": "บริษัทหลัก"
+      },
+      {
+        "No": 3,
+        "Code": "twp",
+        "Name": "Thaiwire product public company limited",
+        "Currency": "bth",
+        "Primary": ""
+      }
+    ]
+  }
+}
