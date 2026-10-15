@@ -23,11 +23,14 @@ GO
 GRANT INSERT, UPDATE, DELETE ON dbo.prq_mstr TO [$(AppLogin)];   -- ใบเสนอซื้อ
 GRANT INSERT, UPDATE, DELETE ON dbo.prq_det  TO [$(AppLogin)];
 GRANT UPDATE                 ON dbo.pur_ctrl TO [$(AppLogin)];   -- เลขรันใบ PR (purc_pr)
-GRANT INSERT, UPDATE, DELETE ON dbo.vd_mstr  TO [$(AppLogin)];   -- ข้อมูลหลัก (admin/manager)
+GRANT INSERT, UPDATE, DELETE ON dbo.vd_mstr  TO [$(AppLogin)];   -- ข้อมูลหลัก (module base ระดับ manager)
 GRANT INSERT, UPDATE, DELETE ON dbo.it_mstr  TO [$(AppLogin)];
 GRANT INSERT, UPDATE, DELETE ON dbo.en_mstr  TO [$(AppLogin)];
 GRANT INSERT, UPDATE, DELETE ON dbo.div_mstr TO [$(AppLogin)];
 GRANT INSERT, UPDATE, DELETE ON dbo.app_user TO [$(AppLogin)];   -- ผู้ใช้เว็บ
+GRANT INSERT, UPDATE, DELETE ON dbo.app_user_module TO [$(AppLogin)];   -- สิทธิ์ module ของผู้ใช้
+GRANT INSERT, UPDATE         ON dbo.app_doc_seq TO [$(AppLogin)];   -- ตัวนับเลขที่เอกสารของเว็บ
+GRANT INSERT                 ON dbo.app_audit   TO [$(AppLogin)];   -- ประวัติการแก้ไข (ไม่ให้แก้/ลบ)
 GO
 
 PRINT N'สร้าง/ปรับสิทธิ์ login $(AppLogin) เรียบร้อย';

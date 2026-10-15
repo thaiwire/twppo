@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Report ScriptLanguage="CSharp" DoublePass="true" ReportInfo.Name="PR - ใบเสนอซื้อ" ReportInfo.Author="mtp_po_web" ReportInfo.Version="1">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" DoublePass="true" ReportInfo.Name="PR - ใบเสนอซื้อ" ReportInfo.Author="mtp_po_web" ReportInfo.Version="1" ReportInfo.Created="10/15/2026 11:22:00" ReportInfo.Modified="10/15/2026 11:22:48" ReportInfo.CreatorVersion="2027.1.0.0">
   <ScriptText>using System;
 using System.Collections.Generic;
 using FastReport;
@@ -17,7 +17,7 @@ namespace FastReport
 
     private void PageHeader1_BeforePrint(object sender, EventArgs e)
     {
-      string nbr = Convert.ToString(Report.GetColumnValue("Header.Nbr"));
+      string nbr = Convert.ToString(Report.GetColumnValue(&quot;Header.Nbr&quot;));
       int page = Engine.CurPage;
       if (!firstPage.ContainsKey(nbr)) firstPage[nbr] = page;
       lastPage[nbr] = Math.Max(page, lastPage.ContainsKey(nbr) ? lastPage[nbr] : page);
@@ -30,7 +30,7 @@ namespace FastReport
       string nbr;
       if (!pageDoc.TryGetValue(page, out nbr)) return;
       int first = firstPage[nbr];
-      txtPage.Text = "หน้า " + (page - first + 1) + " / " + (lastPage[nbr] - first + 1);
+      txtPage.Text = &quot;หน้า &quot; + (page - first + 1) + &quot; / &quot; + (lastPage[nbr] - first + 1);
     }
   }
 }
@@ -70,34 +70,27 @@ namespace FastReport
       <Column Name="Line" DataType="System.Decimal"/>
       <Column Name="Part" DataType="System.String"/>
       <Column Name="Desc" DataType="System.String"/>
+      <Column Name="RemarkText" DataType="System.String"/>
       <Column Name="Um" DataType="System.String"/>
       <Column Name="Qty" DataType="System.Decimal"/>
       <Column Name="Price" DataType="System.Decimal"/>
       <Column Name="Amount" DataType="System.Decimal"/>
     </TableDataSource>
-    <!-- 1 ใบ PR (Header) มีหลายรายการ (Lines) — พิมพ์หลายใบในไฟล์เดียวได้ -->
     <Relation Name="Header_Lines" ParentDataSource="Header" ChildDataSource="Lines" ParentColumns="Nbr" ChildColumns="Nbr" Enabled="true"/>
   </Dictionary>
-
-  <!-- A4 แนวตั้ง ขอบ 10 มม. พื้นที่พิมพ์กว้าง 718.2 px (190 มม.) -->
-  <ReportPage Name="Page1" PaperWidth="210" PaperHeight="297" LeftMargin="10" TopMargin="10" RightMargin="10" BottomMargin="10" Watermark.Font="Tahoma, 60pt">
-
+  <ReportPage Name="Page1" Watermark.Font="Tahoma, 60pt">
     <PageHeaderBand Name="PageHeader1" Width="718.2" Height="190" BeforePrintEvent="PageHeader1_BeforePrint">
       <TextObject Name="txtCompany" Width="718.2" Height="24" Text="[Header.EntityName]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 13pt, style=Bold"/>
-      <TextObject Name="txtTitle" Top="26" Width="718.2" Height="24" Text="ใบเสนอซื้อ (PURCHASE REQUISITION)" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 12pt, style=Bold"/>
+      <TextObject Name="txtTitle" Top="26" Width="718.2" Height="24" Text="ใบเสนอซื้อ (PURCHASE REQUISITION) สำหรับ TWP" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 12pt, style=Bold"/>
       <TextObject Name="txtApproved" Left="568.2" Top="2" Width="150" Height="20" Border.Lines="All" Text="[Header.Approved]" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
-
-      <!-- กรอบข้อมูลผู้ขาย (ซ้าย) -->
       <ShapeObject Name="boxVend" Top="58" Width="460" Height="100"/>
       <TextObject Name="lblVend" Left="6" Top="62" Width="70" Height="18" Text="ผู้ขาย" Font="Tahoma, 9pt, style=Bold"/>
       <TextObject Name="txtVend" Left="76" Top="62" Width="380" Height="18" Text="[Header.VendCode]  [Header.VendName]" Font="Tahoma, 9pt"/>
-      <TextObject Name="txtVendAddr" Left="76" Top="80" Width="380" Height="36" Text="[Header.VendAddress]" Font="Tahoma, 8pt" WordWrap="true"/>
+      <TextObject Name="txtVendAddr" Left="76" Top="80" Width="380" Height="36" Text="[Header.VendAddress]" Font="Tahoma, 8pt"/>
       <TextObject Name="lblVendTel" Left="6" Top="116" Width="70" Height="18" Text="โทร" Font="Tahoma, 9pt, style=Bold"/>
       <TextObject Name="txtVendTel" Left="76" Top="116" Width="380" Height="18" Text="[Header.VendTel]" Font="Tahoma, 9pt"/>
       <TextObject Name="lblDiv" Left="6" Top="136" Width="70" Height="18" Text="หน่วยงาน" Font="Tahoma, 9pt, style=Bold"/>
       <TextObject Name="txtDiv" Left="76" Top="136" Width="380" Height="18" Text="[Header.DivName]" Font="Tahoma, 9pt"/>
-
-      <!-- กรอบข้อมูลเอกสาร (ขวา) -->
       <ShapeObject Name="boxDoc" Left="468.2" Top="58" Width="250" Height="100"/>
       <TextObject Name="lblNbr" Left="474" Top="62" Width="90" Height="18" Text="เลขที่" Font="Tahoma, 9pt, style=Bold"/>
       <TextObject Name="txtNbr" Left="564" Top="62" Width="150" Height="18" Text="[Header.Nbr]" Font="Tahoma, 9pt, style=Bold"/>
@@ -109,8 +102,6 @@ namespace FastReport
       <TextObject Name="txtReq" Left="564" Top="116" Width="150" Height="18" Text="[Header.Request]" Font="Tahoma, 9pt"/>
       <TextObject Name="lblEntity" Left="474" Top="134" Width="90" Height="18" Text="บริษัท" Font="Tahoma, 9pt, style=Bold"/>
       <TextObject Name="txtEntity" Left="564" Top="134" Width="150" Height="18" Text="[Header.Entity]" Font="Tahoma, 9pt"/>
-
-      <!-- หัวตาราง -->
       <TextObject Name="hNo" Top="166" Width="35" Height="24" Border.Lines="All" Fill.Color="Gainsboro" Text="ที่" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
       <TextObject Name="hPart" Left="35" Top="166" Width="95" Height="24" Border.Lines="All" Fill.Color="Gainsboro" Text="รหัสสินค้า" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
       <TextObject Name="hDesc" Left="130" Top="166" Width="270" Height="24" Border.Lines="All" Fill.Color="Gainsboro" Text="รายการ" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
@@ -119,50 +110,44 @@ namespace FastReport
       <TextObject Name="hPrice" Left="520" Top="166" Width="90" Height="24" Border.Lines="All" Fill.Color="Gainsboro" Text="ราคา/หน่วย" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
       <TextObject Name="hAmount" Left="610" Top="166" Width="108.2" Height="24" Border.Lines="All" Fill.Color="Gainsboro" Text="จำนวนเงิน" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 8pt, style=Bold"/>
     </PageHeaderBand>
-
-    <!-- ใบละชุดหน้า: ขึ้นหน้าใหม่ + เริ่มเลขหน้าใหม่ทุกใบ -->
-    <DataBand Name="Master" Top="194" Width="718.2" Height="1" DataSource="Header" StartNewPage="true">
-      <DataBand Name="Data1" Top="194" Width="718.2" Height="20" CanGrow="true" DataSource="Lines">
-        <TextObject Name="dNo" Width="35" Height="20" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" Text="[Lines.Line]" HorzAlign="Center" Font="Tahoma, 8pt" Format="Number" Format.UseLocale="false" Format.DecimalDigits="0" Format.DecimalSeparator="." Format.GroupSeparator="" Format.NegativePattern="1"/>
+    <DataBand Name="Master" Top="193.33" Width="718.2" Height="1" StartNewPage="true" DataSource="Header">
+      <DataBand Name="Data1" Top="197.67" Width="718.2" Height="20" CanGrow="true" DataSource="Lines">
+        <TextObject Name="dNo" Width="35" Height="20" Border.Lines="Left, Right" CanGrow="true" GrowToBottom="true" Text="[Lines.Line]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="0" Format.DecimalSeparator="." Format.GroupSeparator="" Format.NegativePattern="1" HorzAlign="Center" Font="Tahoma, 8pt"/>
         <TextObject Name="dPart" Left="35" Width="95" Height="20" Border.Lines="Right" CanGrow="true" GrowToBottom="true" Text="[Lines.Part]" Font="Tahoma, 8pt"/>
-        <TextObject Name="dDesc" Left="130" Width="270" Height="20" Border.Lines="Right" CanGrow="true" GrowToBottom="true" Text="[Lines.Desc]" Font="Tahoma, 8pt" WordWrap="true"/>
-        <TextObject Name="dQty" Left="400" Width="70" Height="20" Border.Lines="Right" CanGrow="true" GrowToBottom="true" Text="[Lines.Qty]" HorzAlign="Right" Font="Tahoma, 8pt" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
+        <TextObject Name="dDesc" Left="130" Width="270" Height="20" Border.Lines="Right" CanGrow="true" GrowToBottom="true" Text="[Lines.Desc][Lines.RemarkText]" Font="Tahoma, 8pt"/>
+        <TextObject Name="dQty" Left="400" Width="70" Height="20" Border.Lines="Right" CanGrow="true" GrowToBottom="true" Text="[Lines.Qty]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1" HorzAlign="Right" Font="Tahoma, 8pt"/>
         <TextObject Name="dUm" Left="470" Width="50" Height="20" Border.Lines="Right" CanGrow="true" GrowToBottom="true" Text="[Lines.Um]" HorzAlign="Center" Font="Tahoma, 8pt"/>
-        <TextObject Name="dPrice" Left="520" Width="90" Height="20" Border.Lines="Right" CanGrow="true" GrowToBottom="true" Text="[Lines.Price]" HorzAlign="Right" Font="Tahoma, 8pt" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
-        <TextObject Name="dAmount" Left="610" Width="108.2" Height="20" Border.Lines="Right" CanGrow="true" GrowToBottom="true" Text="[Lines.Amount]" HorzAlign="Right" Font="Tahoma, 8pt" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
-      <DataFooterBand Name="Footer1" Top="218" Width="718.2" Height="230" KeepWithData="true">
-        <!-- ยอดรวม -->
-        <TextObject Name="txtNetText" Width="470" Height="20" Border.Lines="All" Fill.Color="WhiteSmoke" Text="([Header.NetText])" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
-        <TextObject Name="lblSub" Left="470" Width="140" Height="20" Border.Lines="All" Text="รวมราคาสินค้า" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
-        <TextObject Name="txtSub" Left="610" Width="108.2" Height="20" Border.Lines="All" Text="[Header.Subtotal]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
-        <TextObject Name="lblDisc" Left="470" Top="20" Width="140" Height="20" Border.Lines="All" Text="ส่วนลด [Format(&quot;{0:0.##}&quot;, [Header.DiscPct])]%" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
-        <TextObject Name="txtDisc" Left="610" Top="20" Width="108.2" Height="20" Border.Lines="All" Text="[Header.DiscAmt]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
-        <TextObject Name="lblAfter" Left="470" Top="40" Width="140" Height="20" Border.Lines="All" Text="ราคาหลังหักส่วนลด" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
-        <TextObject Name="txtAfter" Left="610" Top="40" Width="108.2" Height="20" Border.Lines="All" Text="[Header.AfterDisc]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
-        <TextObject Name="lblVat" Left="470" Top="60" Width="140" Height="20" Border.Lines="All" Text="ภาษีมูลค่าเพิ่ม [Format(&quot;{0:0.##}&quot;, [Header.VatPct])]%" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
-        <TextObject Name="txtVat" Left="610" Top="60" Width="108.2" Height="20" Border.Lines="All" Text="[Header.VatAmt]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
-        <TextObject Name="lblNet" Left="470" Top="80" Width="140" Height="22" Border.Lines="All" Fill.Color="Gainsboro" Text="รวมราคาสุทธิ" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
-        <TextObject Name="txtNet" Left="610" Top="80" Width="108.2" Height="22" Border.Lines="All" Fill.Color="Gainsboro" Text="[Header.Net]" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt, style=Bold" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1"/>
-        <TextObject Name="lblLeft" Top="20" Width="470" Height="82" Border.Lines="All" Text="หมายเหตุ: [Header.Remark]&#13;&#10;[Header.Remark1]" Padding="6, 4, 2, 0" Font="Tahoma, 8pt" WordWrap="true"/>
-
-        <!-- ลายเซ็น -->
-        <TextObject Name="sig1Line" Left="10" Top="160" Width="220" Height="18" Text="ลงชื่อ ........................................" HorzAlign="Center" Font="Tahoma, 9pt"/>
-        <TextObject Name="sig1Name" Left="10" Top="180" Width="220" Height="18" Text="( [Header.Request] )" HorzAlign="Center" Font="Tahoma, 9pt"/>
-        <TextObject Name="sig1Role" Left="10" Top="198" Width="220" Height="18" Text="ผู้ขอซื้อ" HorzAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
-        <TextObject Name="sig2Line" Left="249" Top="160" Width="220" Height="18" Text="ลงชื่อ ........................................" HorzAlign="Center" Font="Tahoma, 9pt"/>
-        <TextObject Name="sig2Name" Left="249" Top="180" Width="220" Height="18" Text="( ........................................ )" HorzAlign="Center" Font="Tahoma, 9pt"/>
-        <TextObject Name="sig2Role" Left="249" Top="198" Width="220" Height="18" Text="ผู้ตรวจสอบ" HorzAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
-        <TextObject Name="sig3Line" Left="488" Top="160" Width="220" Height="18" Text="ลงชื่อ ........................................" HorzAlign="Center" Font="Tahoma, 9pt"/>
-        <TextObject Name="sig3Name" Left="488" Top="180" Width="220" Height="18" Text="( [Header.ApprovedBy] )" HorzAlign="Center" Font="Tahoma, 9pt"/>
-        <TextObject Name="sig3Role" Left="488" Top="198" Width="220" Height="18" Text="ผู้อนุมัติ" HorzAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
-      </DataFooterBand>
+        <TextObject Name="dPrice" Left="520" Width="90" Height="20" Border.Lines="Right" CanGrow="true" GrowToBottom="true" Text="[Lines.Price]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1" HorzAlign="Right" Font="Tahoma, 8pt"/>
+        <TextObject Name="dAmount" Left="610" Width="108.2" Height="20" Border.Lines="Right" CanGrow="true" GrowToBottom="true" Text="[Lines.Amount]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1" HorzAlign="Right" Font="Tahoma, 8pt"/>
+        <DataFooterBand Name="Footer1" Top="221" Width="718.2" Height="230" KeepWithData="true">
+          <TextObject Name="txtNetText" Width="470" Height="20" Border.Lines="All" Fill.Color="WhiteSmoke" Text="([Header.NetText])" HorzAlign="Center" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+          <TextObject Name="lblSub" Left="470" Width="140" Height="20" Border.Lines="All" Text="รวมราคาสินค้า" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="txtSub" Left="610" Width="108.2" Height="20" Border.Lines="All" Text="[Header.Subtotal]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="lblDisc" Left="470" Top="20" Width="140" Height="20" Border.Lines="All" Text="ส่วนลด [Format(&quot;{0:0.##}&quot;, [Header.DiscPct])]%" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="txtDisc" Left="610" Top="20" Width="108.2" Height="20" Border.Lines="All" Text="[Header.DiscAmt]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="lblAfter" Left="470" Top="40" Width="140" Height="20" Border.Lines="All" Text="ราคาหลังหักส่วนลด" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="txtAfter" Left="610" Top="40" Width="108.2" Height="20" Border.Lines="All" Text="[Header.AfterDisc]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="lblVat" Left="470" Top="60" Width="140" Height="20" Border.Lines="All" Text="ภาษีมูลค่าเพิ่ม [Format(&quot;{0:0.##}&quot;, [Header.VatPct])]%" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="txtVat" Left="610" Top="60" Width="108.2" Height="20" Border.Lines="All" Text="[Header.VatAmt]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 8pt"/>
+          <TextObject Name="lblNet" Left="470" Top="80" Width="140" Height="22" Border.Lines="All" Fill.Color="Gainsboro" Text="รวมราคาสุทธิ" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+          <TextObject Name="txtNet" Left="610" Top="80" Width="108.2" Height="22" Border.Lines="All" Fill.Color="Gainsboro" Text="[Header.Net]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="2" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1" HorzAlign="Right" VertAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+          <TextObject Name="lblLeft" Top="20" Width="470" Height="82" Border.Lines="All" Text="หมายเหตุ: [Header.Remark]&#13;&#10;[Header.Remark1]" Padding="6, 4, 2, 0" Font="Tahoma, 8pt"/>
+          <TextObject Name="sig1Line" Left="10" Top="160" Width="220" Height="18" Text="ลงชื่อ ........................................" HorzAlign="Center" Font="Tahoma, 9pt"/>
+          <TextObject Name="sig1Name" Left="10" Top="180" Width="220" Height="18" Text="( [Header.Request] )" HorzAlign="Center" Font="Tahoma, 9pt"/>
+          <TextObject Name="sig1Role" Left="10" Top="198" Width="220" Height="18" Text="ผู้ขอซื้อ" HorzAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+          <TextObject Name="sig2Line" Left="249" Top="160" Width="220" Height="18" Text="ลงชื่อ ........................................" HorzAlign="Center" Font="Tahoma, 9pt"/>
+          <TextObject Name="sig2Name" Left="249" Top="180" Width="220" Height="18" Text="( ........................................ )" HorzAlign="Center" Font="Tahoma, 9pt"/>
+          <TextObject Name="sig2Role" Left="249" Top="198" Width="220" Height="18" Text="ผู้ตรวจสอบ" HorzAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+          <TextObject Name="sig3Line" Left="488" Top="160" Width="220" Height="18" Text="ลงชื่อ ........................................" HorzAlign="Center" Font="Tahoma, 9pt"/>
+          <TextObject Name="sig3Name" Left="488" Top="180" Width="220" Height="18" Text="( [Header.ApprovedBy] )" HorzAlign="Center" Font="Tahoma, 9pt"/>
+          <TextObject Name="sig3Role" Left="488" Top="198" Width="220" Height="18" Text="ผู้อนุมัติ" HorzAlign="Center" Font="Tahoma, 9pt, style=Bold"/>
+        </DataFooterBand>
       </DataBand>
     </DataBand>
-
-    <PageFooterBand Name="PageFooter1" Top="472" Width="718.2" Height="22">
+    <PageFooterBand Name="PageFooter1" Top="454.33" Width="718.2" Height="22">
       <LineObject Name="footLine" Width="718.2" Border.Width="0.5"/>
       <TextObject Name="txtPrinted" Top="3" Width="400" Height="18" Text="พิมพ์โดย [Header.PrintedBy]  [DateTime.Now.ToString(&quot;dd/MM/yyyy HH:mm&quot;)]" Font="Tahoma, 7pt"/>
-      <TextObject Name="txtPage" Left="518.2" Top="3" Width="200" Height="18" Text="หน้า [Page#] / [TotalPages#]" HorzAlign="Right" Font="Tahoma, 7pt" BeforePrintEvent="txtPage_BeforePrint"/>
+      <TextObject Name="txtPage" Left="518.2" Top="3" Width="200" Height="18" BeforePrintEvent="txtPage_BeforePrint" Text="หน้า [Page#] / [TotalPages#]" HorzAlign="Right" Font="Tahoma, 7pt"/>
     </PageFooterBand>
   </ReportPage>
 </Report>

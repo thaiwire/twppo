@@ -1,0 +1,53 @@
+// module pr — ใบเสนอซื้อ (ตารางระบบเดิม + คอลัมน์ที่เว็บเพิ่ม ดู prisma/sql/)
+
+/// ใบเสนอซื้อ (PR) — ส่วนหัว
+model prq_mstr {
+  prq_nbr       String    @id(map: "PK_prq_mstr") @db.NVarChar(24)
+  prq_pr_date   DateTime? @db.Date
+  prq_need_date DateTime? @db.Date
+  prq_approve   Boolean?
+  prq_request   String?   @db.NVarChar(24)
+  prq_vend      String?   @db.NVarChar(24)
+  prq_remark    String?   @db.NVarChar(120)
+  prq_status    String?   @db.NVarChar(3)
+  prq_user2     String?   @db.NVarChar(24)
+  prq_entity    String?   @db.NVarChar(12)
+  prq_remark1   String?   @db.NVarChar(120)
+  prq_user1     String?   @db.NVarChar(24)
+  prq_date1     DateTime? @db.Date
+  prq_time1     String?   @db.NVarChar(24)
+  prq_disc_pct1 Decimal?  @db.Decimal(18, 4)
+  prq_disc_amt1 Decimal?  @db.Decimal(18, 4)
+  prq_vat_amt   Decimal?  @db.Decimal(18, 4)
+  prq_taxable   Boolean?
+  prq_vt_class  String?   @db.NVarChar(3)
+  ID            Int       @default(autoincrement())
+  /// หน่วยงาน (div_mstr) — เพิ่มโดยระบบเว็บ (prisma/sql/2026-10-14_div_code.sql)
+  prq_divcode   String?   @db.NVarChar(24)
+}
+
+/// ใบเสนอซื้อ (PR) — รายการสินค้า
+model prq_det {
+  prqd_nbr       String   @db.NVarChar(24)
+  prqd_part      String?  @db.NVarChar(60)
+  prqd_qty_ord   Decimal? @db.Decimal(18, 4)
+  prqd_qty_open  Decimal? @db.Decimal(18, 4)
+  prqd_um        String?  @db.NVarChar(9)
+  prqd_est_price Decimal? @db.Decimal(18, 4)
+  prqd_status    String?  @db.NVarChar(3)
+  prqd_line      Int
+  prqd_desc      String?  @db.NVarChar(120)
+  ID             Int      @default(autoincrement())
+  prqd_rmk       String?  @db.NChar(180)
+  prqd_rmk1      String?  @db.NChar(180)
+
+  @@id([prqd_nbr, prqd_line], map: "PK_prq_det")
+}
+
+/// ค่าควบคุมฝ่ายจัดซื้อ (เลขที่ PR ล่าสุด, prefix) — ใช้เฉพาะคอลัมน์ที่ต้องการ
+model pur_ctrl {
+  id          BigInt  @id(map: "PK_pur_ctrl") @default(autoincrement())
+  purc_pr     Int?
+  purc_pr_pre String? @db.NChar(10)
+  purc_entity String? @db.NChar(10)
+}

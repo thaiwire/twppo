@@ -8,7 +8,7 @@ import { api } from "@/lib/api";
 
 export default function LoginForm() {
   const router = useRouter();
-  const next = useSearchParams().get("next") || "/pr";
+  const next = useSearchParams().get("next") || "/home";
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +17,7 @@ export default function LoginForm() {
     setError(undefined);
     try {
       await api("/auth/login", { method: "POST", body: v });
-      router.replace(next.startsWith("/") ? next : "/pr");
+      router.replace(next.startsWith("/") ? next : "/home");
       router.refresh();
     } catch (e) {
       setError((e as Error).message);

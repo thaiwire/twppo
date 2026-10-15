@@ -3,6 +3,7 @@
 import {
   DeleteOutlined,
   EditOutlined,
+  EyeOutlined,
   PlusOutlined,
   PrinterOutlined,
   ReloadOutlined,
@@ -25,8 +26,10 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useMe } from "@/components/AuthContext";
 import { api, toQuery } from "@/lib/api";
 import { invalidateMaster } from "@/lib/master";
+import { can, type ModuleCode } from "@/lib/modules";
 import type { Paged } from "@/lib/types";
 
 export interface MasterRow {
@@ -50,6 +53,8 @@ interface Props<T extends MasterRow> {
   statusFilter?: boolean;
   /** ห้ามลบรายการนี้ (เช่น บริษัทหลัก) — คืนข้อความเหตุผล */
   deleteBlocked?: (row: T) => string | undefined;
+  /** เพิ่ม/แก้ไข/ลบ ได้เฉพาะระดับ manager ของ module นี้ (ไม่ระบุ = ได้เสมอ เช่น เมนู Admin) */
+  module?: ModuleCode;
 }
 
 interface ListState {
@@ -78,6 +83,9 @@ export const editPath = (basePath: string, code: string) =>
 /** หน้ารายการข้อมูลหลัก: ค้นหา / แบ่งหน้า / ลบ / พิมพ์รายงาน — เพิ่ม/แก้ไขไปที่หน้าฟอร์มแยก */
 export default function MasterList<T extends MasterRow>(props: Props<T>) {
   const { title, endpoint, basePath, columns, statusFilter } = props;
+  const me = useMe();
+  /** ระดับ user ของ module = ดูอย่างเดียว (กดแถวเพื่อดูรายละเอียดได้) */
+  const canEdit = !props.module || can(me, props.module, "manager");
   const { message } = App.useApp();
   const router = useRouter();
   const storageKey = `master-list:${endpoint}`;
@@ -141,11 +149,13 @@ export default function MasterList<T extends MasterRow>(props: Props<T>) {
               </Link>
             </Tooltip>
           )}
-          <Link href={`${basePath}/new`}>
-            <Button type="primary" icon={<PlusOutlined />}>
-              เพิ่ม{title}
-            </Button>
-          </Link>
+          {canEdit && (
+            <Link href={`${basePath}/new`}>
+              <Button type="primary" icon={<PlusOutlined />}>
+                เพิ่ม{title}
+              </Button>
+            </Link>
+          )}
         </Space>
       }
     >
@@ -219,6 +229,14 @@ export default function MasterList<T extends MasterRow>(props: Props<T>) {
             width: 100,
             fixed: "right",
             render: (_, r) => {
+              if (!canEdit)
+                return (
+                  <Tooltip title="ดูรายละเอียด">
+                    <Link href={editPath(basePath, r.code)}>
+                      <Button type="text" icon={<EyeOutlined />} />
+                    </Link>
+                  </Tooltip>
+                );
               const blocked = props.deleteBlocked?.(r);
               return (
                 <Space size={0}>

@@ -1,3 +1,5 @@
+import type { ModuleAccess } from "./modules";
+
 export interface Me {
   id: number;
   username: string;
@@ -5,11 +7,10 @@ export interface Me {
   role: string;
   /** หน่วยงานของผู้ใช้ — มีค่า = เห็นเฉพาะ PR ของหน่วยงานนี้ / null = เห็นทุกหน่วยงาน */
   divCode: string | null;
-  canApprove: boolean;
-  /** เห็นเมนูข้อมูลหลัก (ผู้ขาย/สินค้า/บริษัท) — role admin, manager */
-  canManageMaster: boolean;
+  /** สิทธิ์ module ที่มีผลจริง เช่น { pr: "manager" } (admin ได้ manager ทุก module) — ตรวจด้วย can() ใน lib/modules */
+  modules: ModuleAccess;
   /** เห็นเมนู Admin (จัดการผู้ใช้) — role admin เท่านั้น */
-  canManageUsers: boolean;
+  isAdmin: boolean;
 }
 
 export interface Vendor {
@@ -67,6 +68,9 @@ export interface PrLine {
   line: number;
   part: string;
   desc: string;
+  /** หมายเหตุรายการ 2 บรรทัด */
+  rmk: string;
+  rmk1: string;
   um: string;
   qty: number;
   price: number;
@@ -130,7 +134,7 @@ export interface SavePrInput {
   taxable?: boolean;
   vatClass?: string;
   divCode?: string;
-  lines: { part?: string; desc: string; um?: string; qty: number; price: number }[];
+  lines: { part?: string; desc: string; rmk?: string; rmk1?: string; um?: string; qty: number; price: number }[];
 }
 
 export interface Paged<T> {
@@ -230,7 +234,8 @@ export interface AdminLookups {
 
 // ---------------------------------------------------------------- ผู้ใช้งาน (admin)
 
-export type UserRole = "admin" | "manager" | "user";
+/** admin = ผู้ดูแลระบบ (ทุก module) / user = ใช้งานตามสิทธิ์ module */
+export type UserRole = "admin" | "user";
 
 export interface UserRecord {
   /** = username (ใช้เป็นรหัสของรายการ) */
@@ -239,6 +244,7 @@ export interface UserRecord {
   username: string;
   displayName: string;
   role: UserRole;
+  modules: ModuleAccess;
   active: boolean;
   divCode: string | null;
   divName: string;

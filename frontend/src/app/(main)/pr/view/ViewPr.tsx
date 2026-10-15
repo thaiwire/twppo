@@ -28,9 +28,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useMe } from "@/components/AuthContext";
+import LineDesc from "@/components/LineDesc";
 import PrStatusTags from "@/components/PrStatusTags";
 import { api, prPath } from "@/lib/api";
 import { fmtDate, fmtNum } from "@/lib/format";
+import { can } from "@/lib/modules";
 import type { PrDetail, PrLine } from "@/lib/types";
 import { usePr } from "@/lib/usePr";
 
@@ -46,6 +48,8 @@ export default function ViewPr() {
   if (!pr) return <Card><Skeleton active /></Card>;
 
   const editable = !pr.approved && pr.status === "O" && !pr.locked;
+  /** อนุมัติ / ปิด-เปิด PR — ระดับ manager ของ module pr */
+  const canApprove = can(me, "pr", "manager");
   const t = pr.totals;
 
   async function action(name: string, path: string, okMsg: string) {
@@ -109,7 +113,7 @@ export default function ViewPr() {
               </Button>
             </Popconfirm>
           )}
-          {me.canApprove && pr.status === "O" && !pr.approved && (
+          {canApprove && pr.status === "O" && !pr.approved && (
             <Popconfirm
               title={`อนุมัติใบเสนอซื้อ ${pr.nbr}?`}
               okText="อนุมัติ"
@@ -121,7 +125,7 @@ export default function ViewPr() {
               </Button>
             </Popconfirm>
           )}
-          {me.canApprove && pr.status === "O" && pr.approved && !pr.locked && (
+          {canApprove && pr.status === "O" && pr.approved && !pr.locked && (
             <Popconfirm
               title="ยกเลิกการอนุมัติ?"
               okText="ยืนยัน"
@@ -133,7 +137,7 @@ export default function ViewPr() {
               </Button>
             </Popconfirm>
           )}
-          {me.canApprove && pr.status === "O" && (
+          {canApprove && pr.status === "O" && (
             <Popconfirm
               title="ปิดใบเสนอซื้อ?"
               description="ใช้เมื่อไม่ต้องการดำเนินการต่อ"
@@ -146,7 +150,7 @@ export default function ViewPr() {
               </Button>
             </Popconfirm>
           )}
-          {me.canApprove && pr.status === "C" && !pr.lines.every((l) => l.qtyOrdered >= l.qty) && (
+          {canApprove && pr.status === "C" && !pr.lines.every((l) => l.qtyOrdered >= l.qty) && (
             <Button
               icon={<FolderOpenOutlined />}
               loading={busy === "reopen"}
@@ -200,7 +204,11 @@ export default function ViewPr() {
         columns={[
           { title: "ลำดับ", dataIndex: "line", width: 60, align: "center" },
           { title: "รหัสสินค้า", dataIndex: "part", width: 140 },
-          { title: "ชื่อสินค้า / รายละเอียด", dataIndex: "desc" },
+          {
+            title: "ชื่อสินค้า / รายละเอียด",
+            dataIndex: "desc",
+            render: (v: string, l) => <LineDesc desc={v} rmk={l.rmk} rmk1={l.rmk1} />,
+          },
           { title: "หน่วยนับ", dataIndex: "um", width: 90 },
           { title: "จำนวน", dataIndex: "qty", width: 100, align: "right", render: (v: number) => fmtNum(v) },
           { title: "ราคา/หน่วย", dataIndex: "price", width: 120, align: "right", render: (v: number) => fmtNum(v) },

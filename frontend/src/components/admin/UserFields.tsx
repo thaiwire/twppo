@@ -4,14 +4,15 @@ import { Alert, Col, Divider, Form, Input, Radio, Row, Select, Switch } from "an
 import { useMe } from "@/components/AuthContext";
 import { useNewDefaults } from "@/components/master/useNewDefaults";
 import { divisionOptions, useMaster } from "@/lib/master";
+import { MODULE_CODES, MODULES } from "@/lib/modules";
 
 const ROLE_OPTIONS = [
-  { value: "user", label: "user — สร้าง/แก้ไข/พิมพ์ PR" },
-  { value: "manager", label: "manager — + อนุมัติ PR, ข้อมูลหลัก" },
-  { value: "admin", label: "admin — + จัดการผู้ใช้" },
+  { value: "user", label: "user — ใช้งานตามสิทธิ์ module ด้านล่าง" },
+  { value: "admin", label: "admin — ผู้ดูแลระบบ: ทุก module (ระดับ manager) + จัดการผู้ใช้" },
 ];
 
-const DEFAULTS = { role: "user", active: true };
+/** ผู้ใช้ใหม่: ใช้ PR ได้ระดับ user */
+const DEFAULTS = { role: "user", active: true, modules: { pr: "user" } };
 
 const section = (text: string) => (
   <Divider titlePlacement="start" style={{ margin: "8px 0 16px" }}>
@@ -24,6 +25,7 @@ export default function UserFields({ editing }: { editing: boolean }) {
   const me = useMe();
   const master = useMaster();
   const username = Form.useWatch<string | undefined>("code");
+  const role = Form.useWatch<string | undefined>("role");
   // แก้บัญชีตัวเอง: เปลี่ยนระดับ/ปิดใช้งานไม่ได้ (backend ตรวจซ้ำ)
   const self = editing && !!username && username.toLowerCase() === me.username.toLowerCase();
   useNewDefaults(editing, DEFAULTS);
@@ -64,12 +66,12 @@ export default function UserFields({ editing }: { editing: boolean }) {
           type="info"
           showIcon
           style={{ marginBottom: 16 }}
-          title="นี่คือบัญชีของคุณ — เปลี่ยนระดับหรือปิดใช้งานตัวเองไม่ได้"
+          title="นี่คือบัญชีของคุณ — เปลี่ยนประเภทผู้ใช้หรือปิดใช้งานตัวเองไม่ได้"
         />
       )}
       <Row gutter={16}>
         <Col xs={24} md={16}>
-          <Form.Item name="role" label="ระดับผู้ใช้ (level)" rules={[{ required: true, message: "กรุณาเลือกระดับ" }]}>
+          <Form.Item name="role" label="ประเภทผู้ใช้" rules={[{ required: true, message: "กรุณาเลือกประเภทผู้ใช้" }]}>
             <Radio.Group options={ROLE_OPTIONS} disabled={self} style={{ display: "flex", flexDirection: "column", gap: 8 }} />
           </Form.Item>
         </Col>
@@ -84,6 +86,43 @@ export default function UserFields({ editing }: { editing: boolean }) {
           </Form.Item>
         </Col>
       </Row>
+
+      {section("สิทธิ์ใช้งาน module")}
+      {role === "admin" && (
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+          title="admin ใช้ได้ทุก module ในระดับ manager — สิทธิ์ด้านล่างจะมีผลเมื่อเปลี่ยนเป็น user"
+        />
+      )}
+      {MODULE_CODES.map((m) => (
+        <Row key={m} gutter={16} align="middle">
+          <Col xs={24} md={8}>
+            <Form.Item
+              name={["modules", m]}
+              label={MODULES[m].name}
+              // ไม่มีค่า (ไม่มีสิทธิ์) แสดงเป็นตัวเลือก "ไม่มีสิทธิ์"
+              getValueProps={(v?: string) => ({ value: v ?? "" })}
+            >
+              <Radio.Group
+                optionType="button"
+                buttonStyle="solid"
+                disabled={role === "admin"}
+                options={[
+                  { value: "", label: "ไม่มีสิทธิ์" },
+                  { value: "user", label: "user" },
+                  { value: "manager", label: "manager" },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={16} style={{ color: "#64748b", fontSize: 13, marginBottom: 16 }}>
+            <div>user: {MODULES[m].user}</div>
+            <div>manager: {MODULES[m].manager}</div>
+          </Col>
+        </Row>
+      ))}
 
       {section("หน่วยงาน")}
       <Row gutter={16}>

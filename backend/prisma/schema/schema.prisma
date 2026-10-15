@@ -1,0 +1,15 @@
+// Schema ของฐานข้อมูลเดิม (dbmtp) — ดึงมาจาก `prisma db pull` เฉพาะตารางที่ระบบเว็บใช้
+// ห้ามรัน `prisma migrate` หรือ `prisma db push` กับฐานข้อมูลนี้ — ใช้แค่ `prisma generate`
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+// model แยกไฟล์ตาม module ในโฟลเดอร์นี้ (core.prisma, base.prisma, pr.prisma ...)
+// เพิ่ม module ใหม่ = เพิ่มไฟล์ <module>.prisma — คัดลอก model จาก `npx prisma db pull --print`

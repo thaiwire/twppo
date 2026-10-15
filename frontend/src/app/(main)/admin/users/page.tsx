@@ -5,13 +5,8 @@ import { useMe } from "@/components/AuthContext";
 import { useMaster } from "@/lib/master";
 import { USERS } from "@/components/master/config";
 import MasterList from "@/components/master/MasterList";
-import type { UserRecord, UserRole } from "@/lib/types";
-
-const ROLE_TAG: Record<UserRole, { color: string; label: string }> = {
-  admin: { color: "red", label: "admin" },
-  manager: { color: "blue", label: "manager" },
-  user: { color: "default", label: "user" },
-};
+import { MODULE_CODES, MODULES } from "@/lib/modules";
+import type { UserRecord } from "@/lib/types";
 
 export default function UsersPage() {
   const me = useMe();
@@ -24,12 +19,17 @@ export default function UsersPage() {
       selectFilters={[
         {
           key: "role",
-          placeholder: "ระดับผู้ใช้",
+          placeholder: "ประเภทผู้ใช้",
           options: [
             { value: "admin", label: "admin" },
-            { value: "manager", label: "manager" },
             { value: "user", label: "user" },
           ],
+        },
+        {
+          key: "module",
+          placeholder: "มีสิทธิ์ module",
+          width: 180,
+          options: MODULE_CODES.map((m) => ({ value: m, label: MODULES[m].name })),
         },
         {
           key: "div",
@@ -59,10 +59,21 @@ export default function UsersPage() {
         },
         { title: "ชื่อที่แสดง", dataIndex: "displayName", ellipsis: true },
         {
-          title: "ระดับ",
-          dataIndex: "role",
-          width: 120,
-          render: (v: UserRole) => <Tag color={ROLE_TAG[v]?.color}>{ROLE_TAG[v]?.label ?? v}</Tag>,
+          title: "สิทธิ์ module",
+          dataIndex: "modules",
+          width: 280,
+          render: (_, r) =>
+            r.role === "admin" ? (
+              <Tag color="red">admin — ทุก module</Tag>
+            ) : MODULE_CODES.some((m) => r.modules[m]) ? (
+              MODULE_CODES.filter((m) => r.modules[m]).map((m) => (
+                <Tag key={m} color={r.modules[m] === "manager" ? "blue" : undefined}>
+                  {MODULES[m].name}: {r.modules[m]}
+                </Tag>
+              ))
+            ) : (
+              <span style={{ color: "#94a3b8" }}>ไม่มีสิทธิ์</span>
+            ),
         },
         {
           title: "หน่วยงาน",

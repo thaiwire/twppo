@@ -1,6 +1,6 @@
-import RequireMaster from "@/components/master/RequireMaster";
+import RequireModule from "@/components/RequireModule";
 
-/** หน้าข้อมูลหลักทั้งหมด — เฉพาะ manager / admin */
+/** หน้าข้อมูลหลักทั้งหมด — module master (เพิ่ม/แก้ไข/ลบ ต้องระดับ manager: ตรวจใน MasterList / MasterFormPage) */
 export default function MasterLayout({ children }: { children: React.ReactNode }) {
-  return <RequireMaster>{children}</RequireMaster>;
+  return <RequireModule module="base">{children}</RequireModule>;
 }

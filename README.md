@@ -52,7 +52,7 @@ cd frontend && npm install && npm run dev
 ```
 
 ค่าตั้งค่า: `backend/.env` (ดู `.env.example`), `frontend/.env.local` (`BACKEND_URL`)
-หมายเหตุ: ใน `.env` รหัสผ่านที่มี `#` ต้องครอบด้วย quote เช่น `DB_PASSWORD='@twp1234#'`
+หมายเหตุ: ใน `.env` รหัสผ่านที่มี `#` ต้องครอบด้วย quote เช่น `DB_PASSWORD='my#secret'`
 
 ## ผู้ใช้งานและสิทธิ์
 
@@ -70,19 +70,34 @@ cd backend && npm run user -- add somchai P@ssw0rd user "สมชาย ใจ�
 cd backend && npm run user -- passwd admin NewPassword
 ```
 
-| role | สิทธิ์ |
-|---|---|
-| `user` (หรืออื่นๆ) | ดู / สร้าง / แก้ไข / ลบ / พิมพ์ PR ที่ยังไม่อนุมัติ |
-| `admin`, `manager` | + อนุมัติ / ยกเลิกอนุมัติ / ปิด-เปิด PR (ตั้งค่าได้ที่ `APPROVER_ROLES`) |
-| `admin`, `manager` | + เมนู **ข้อมูลหลัก**: เพิ่ม/แก้ไข/ลบ ผู้ขาย, รหัสสินค้า, บริษัท (ตั้งค่าได้ที่ `MASTER_ROLES`) |
-| `admin` เท่านั้น | + เมนู **Admin → ผู้ใช้งาน** (`/admin/users`): เพิ่ม/แก้ไข/ลบผู้ใช้, กำหนดระดับ, ปิดใช้งาน, ตั้งรหัสผ่านใหม่ |
+### สิทธิ์แบบ module
+
+ระบบแบ่งเป็น **module** ผู้ใช้ 1 คนมีสิทธิ์ได้หลาย module แต่ละ module มีระดับ `user` หรือ `manager`
+(ตาราง `app_user_module` — สร้างด้วย `backend/prisma/sql/2026-10-15_app_user_module.sql`)
+
+| module | `user` | `manager` |
+|---|---|---|
+| `pr` ใบเสนอซื้อ | ดู / สร้าง / แก้ไข / ลบ / พิมพ์ PR ที่ยังไม่อนุมัติ | + อนุมัติ / ยกเลิกอนุมัติ / ปิด-เปิด PR |
+| `master` ข้อมูลหลัก | ดูข้อมูลหลัก + พิมพ์รายงานข้อมูลหลัก | + เพิ่ม / แก้ไข / ลบ ผู้ขาย, รหัสสินค้า, บริษัท, หน่วยงาน |
+
+- **ประเภทผู้ใช้** (`app_user.role`): `admin` = ทุก module ระดับ manager + เมนู **Admin → ผู้ใช้งาน** / `user` = ตามสิทธิ์ module (ค่าเดิม `manager` ถือเป็น user)
+- ไม่มีสิทธิ์ module ไหน = ไม่เห็นเมนูของ module นั้น และ API ตอบ 403
+- ตั้งสิทธิ์ที่ **Admin → ผู้ใช้งาน → แก้ไข → สิทธิ์ใช้งาน module** (มีผลภายใน 15 วินาที ไม่ต้อง login ใหม่)
+- สคริปต์ `npm run user -- add` ตั้งสิทธิ์ให้: `user` → pr: user / `manager` → pr: manager + master: manager / `admin` → ทุก module
+
+**เพิ่ม module ใหม่** (เช่น `po` ใบสั่งซื้อ) — คู่มือละเอียดพร้อมตัวอย่างโค้ด: **[MenuAndModule.md](MenuAndModule.md)** · แยกเป็นโปรเจกต์ใหม่ที่ใช้ฐานข้อมูลเดิม (เช่น ระบบขาย): **[Starter.md](Starter.md)** · ตัวอย่างเต็มทีละขั้น module ใบสั่งขาย: **[StarterNewModule.md](StarterNewModule.md)** · แผนต่อยอดเป็น ERP บน dbmtp: **[startErp.md](startErp.md)**
+
+1. `backend/src/auth/modules.ts` และ `frontend/src/lib/modules.ts` — เพิ่มรายการใน `MODULES` (ชื่อ, คำอธิบายระดับ, หน้าแรก)
+2. controller ของ module ใส่ `@RequireModule('po')` ที่ class และ `@RequireModule('po', 'manager')` ที่ endpoint ที่ต้องเป็น manager
+3. frontend: `app/(main)/po/layout.tsx` ใช้ `<RequireModule module="po">` และเพิ่มเมนูใน `AppShell.tsx` โดยระบุ `module: "po"`
+4. หน้าตั้งสิทธิ์ผู้ใช้จะมีแถวของ module ใหม่ให้อัตโนมัติ
 
 ### เมนู Admin — จัดการผู้ใช้ (`app_user`)
 
 - ชื่อผู้ใช้เปลี่ยนไม่ได้หลังสร้าง (3–50 ตัว a-z 0-9 . _ @ -), รหัสผ่าน ≥ 8 ตัวมีตัวอักษร+ตัวเลข (เก็บเป็น bcrypt)
 - แก้ไข: เว้นช่องรหัสผ่านว่าง = ไม่เปลี่ยนรหัสผ่าน
-- ป้องกัน: ลบ/ปิดใช้งาน/ลดระดับ **ตัวเอง** ไม่ได้ และต้องเหลือ admin ที่ใช้งานได้อย่างน้อย 1 คนเสมอ
-- **มีผลทันที**: ทุก request ตรวจผู้ใช้จากฐานข้อมูล (cache 15 วินาที) — ปิดใช้งานแล้ว session ที่เปิดอยู่จะถูกตัด, เปลี่ยนระดับแล้วสิทธิ์เปลี่ยนโดยไม่ต้อง login ใหม่
+- ป้องกัน: ลบ/ปิดใช้งาน/เปลี่ยนประเภทผู้ใช้ **ตัวเอง** ไม่ได้ และต้องเหลือ admin ที่ใช้งานได้อย่างน้อย 1 คนเสมอ
+- **มีผลทันที**: ทุก request ตรวจผู้ใช้จากฐานข้อมูล (cache 15 วินาที) — ปิดใช้งานแล้ว session ที่เปิดอยู่จะถูกตัด, เปลี่ยนสิทธิ์แล้วมีผลโดยไม่ต้อง login ใหม่
 
 ### ข้อมูลหลัก (ผู้ขาย / รหัสสินค้า / บริษัท)
 
@@ -124,7 +139,8 @@ cd backend && npm run user -- passwd admin NewPassword
 
 ## รายงาน (FastReport)
 
-- Template: `report/Reports/PR.frx` — เปิดแก้ด้วย FastReport Designer Community Edition ได้
+- Template: `report/Reports/PR.frx` — เปิดแก้ด้วย FastReport Designer Community Edition ได้ → คู่มือ **[FastReport.md](FastReport.md)** (ติดตั้ง Designer, ตัวอย่างแก้ใบ PR, สูตร, แก้ปัญหา)
+- ดูผลหลังแก้ template: `cd report` แล้ว `.\tools\preview.ps1`
 - ข้อมูลส่งเป็น 2 ตาราง: `Header` (1 แถว) และ `Lines` — ตัวอย่างอยู่ที่ `report/Reports/PR.sample.json`
 - ทดสอบ template โดยไม่ต้องผ่าน backend:
 

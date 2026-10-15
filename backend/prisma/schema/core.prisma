@@ -1,0 +1,52 @@
+// core — ผู้ใช้และสิทธิ์ของระบบเว็บ (ตาราง app_*)
+
+/// ผู้ใช้งานเว็บ (รหัสผ่านเป็น bcrypt)
+model app_user {
+  id            Int      @id(map: "PK__app_user__3213E83F2D0706E1") @default(autoincrement())
+  username      String   @unique(map: "UQ_app_user_username") @db.NVarChar(50)
+  password_hash String   @db.NVarChar(255)
+  display_name  String?  @db.NVarChar(100)
+  role          String   @default("user", map: "DF__app_user__role__3E2826D9") @db.NVarChar(20)
+  is_active     Boolean  @default(true, map: "DF__app_user__is_act__3F1C4B12")
+  created_at    DateTime @default(dbgenerated("sysutcdatetime()"), map: "DF__app_user__create__40106F4B")
+  updated_at    DateTime @default(dbgenerated("sysutcdatetime()"), map: "DF__app_user__update__41049384")
+  userlevel     String?  @db.NChar(10)
+  /// หน่วยงานของผู้ใช้ (ไม่บังคับ) — มีค่า = เห็นเฉพาะ PR ของหน่วยงานนี้
+  div_code      String?  @db.NVarChar(24)
+  modules       app_user_module[]
+}
+
+/// สิทธิ์ใช้งาน module ของผู้ใช้ (prisma/sql/2026-10-15_app_user_module.sql) — role admin ใช้ได้ทุก module
+model app_user_module {
+  user_id     Int
+  module_code String   @db.NVarChar(20)
+  level       String   @default("user", map: "DF_app_user_module_level") @db.NVarChar(20)
+  user        app_user @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_app_user_module_user")
+
+  @@id([user_id, module_code], map: "PK_app_user_module")
+}
+
+/// ตัวนับเลขที่เอกสารของเว็บ (prisma/sql/2026-10-15_core_numbering_audit.sql) — ใช้ผ่าน NumberingService
+model app_doc_seq {
+  doc_type   String   @db.NVarChar(20)
+  period     String   @db.NVarChar(8)
+  last_no    Int
+  updated_at DateTime @default(dbgenerated("sysutcdatetime()"), map: "DF_app_doc_seq_updated")
+
+  @@id([doc_type, period], map: "PK_app_doc_seq")
+}
+
+/// ประวัติการเปลี่ยนแปลง (ใคร ทำอะไร กับเอกสารไหน เมื่อไร) — ใช้ผ่าน AuditService
+model app_audit {
+  id          BigInt   @id(map: "PK_app_audit") @default(autoincrement())
+  at          DateTime @default(dbgenerated("sysutcdatetime()"), map: "DF_app_audit_at")
+  username    String   @db.NVarChar(50)
+  module_code String   @db.NVarChar(20)
+  doc_type    String   @db.NVarChar(30)
+  doc_no      String   @db.NVarChar(60)
+  action      String   @db.NVarChar(30)
+  detail      String?  @db.NVarChar(Max)
+
+  @@index([doc_type, doc_no], map: "IX_app_audit_doc")
+  @@index([at(sort: Desc)], map: "IX_app_audit_at")
+}

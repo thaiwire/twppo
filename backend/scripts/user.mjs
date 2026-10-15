@@ -2,7 +2,10 @@
 //   node scripts/user.mjs add <username> <password> [role] [display name]
 //   node scripts/user.mjs passwd <username> <password>
 //   node scripts/user.mjs list
-// role: admin | manager (อนุมัติได้)  |  user (สร้าง/แก้ไข PR)
+// role: admin   = ผู้ดูแลระบบ (ทุก module)
+//       manager = ผู้ใช้ที่ได้สิทธิ์ pr: manager (อนุมัติได้) + base: manager
+//       user    = ผู้ใช้ที่ได้สิทธิ์ pr: user
+// สิทธิ์ module อื่น ๆ ตั้งต่อได้ที่เว็บ เมนู Admin → ผู้ใช้งาน
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import sql from 'mssql';
@@ -19,12 +22,19 @@ const pool = await sql.connect({
 
 try {
   if (cmd === 'list') {
-    const r = await pool.query`SELECT id, username, display_name, role, is_active FROM app_user ORDER BY id`;
+    const r = await pool.query`SELECT u.id, u.username, u.display_name, u.role, u.is_active,
+      STUFF((SELECT ', ' + m.module_code + ':' + m.level FROM app_user_module m WHERE m.user_id = u.id
+             ORDER BY m.module_code FOR XML PATH('')), 1, 2, '') AS modules
+      FROM app_user u ORDER BY u.id`;
     console.table(r.recordset);
   } else if (cmd === 'add' && username && password) {
     const hash = await bcrypt.hash(password, 12);
-    await pool.query`INSERT INTO app_user (username, password_hash, display_name, role, is_active)
-      VALUES (${username}, ${hash}, ${name.join(' ') || username}, ${role}, 1)`;
+    const r = await pool.query`INSERT INTO app_user (username, password_hash, display_name, role, is_active)
+      OUTPUT INSERTED.id VALUES (${username}, ${hash}, ${name.join(' ') || username}, ${role === 'admin' ? 'admin' : 'user'}, 1)`;
+    const id = r.recordset[0].id;
+    const modules = role === 'admin' ? [] : role === 'manager' ? [['pr', 'manager'], ['base', 'manager']] : [['pr', 'user']];
+    for (const [m, level] of modules)
+      await pool.query`INSERT INTO app_user_module (user_id, module_code, level) VALUES (${id}, ${m}, ${level})`;
     console.log(`เพิ่มผู้ใช้ ${username} (${role}) แล้ว`);
   } else if (cmd === 'passwd' && username && password) {
     const hash = await bcrypt.hash(password, 12);

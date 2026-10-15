@@ -13,6 +13,7 @@ backend/src/generated/
 report/bin/
 report/obj/
 report/publish/
+report/preview/
 
 # deploy: log ของ Windows service (NSSM)
 logs/

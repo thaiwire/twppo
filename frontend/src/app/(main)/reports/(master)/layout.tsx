@@ -1,6 +1,6 @@
-import RequireMaster from "@/components/master/RequireMaster";
+import RequireModule from "@/components/RequireModule";
 
-/** รายงานข้อมูลหลัก — เฉพาะ manager / admin */
+/** รายงานข้อมูลหลัก — module master */
 export default function MasterReportsLayout({ children }: { children: React.ReactNode }) {
-  return <RequireMaster>{children}</RequireMaster>;
+  return <RequireModule module="base">{children}</RequireModule>;
 }

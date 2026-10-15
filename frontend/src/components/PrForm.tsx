@@ -1,9 +1,8 @@
 "use client";
 
-import { DeleteOutlined, PlusOutlined, SaveOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, PlusOutlined, SaveOutlined } from "@ant-design/icons";
 import {
   App,
-  AutoComplete,
   Button,
   Card,
   Col,
@@ -13,27 +12,32 @@ import {
   Form,
   Input,
   InputNumber,
+  Popconfirm,
   Row,
   Select,
   Space,
   Switch,
   Table,
+  Tooltip,
   Typography,
 } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api, prPath } from "@/lib/api";
 import { calcTotals, fmtNum } from "@/lib/format";
 import { divisionOptions, useMaster } from "@/lib/master";
 import { useMe } from "./AuthContext";
 import type { PrDetail, SavePrInput } from "@/lib/types";
-import ItemCodeInput from "./ItemCodeInput";
+import LineDesc from "./LineDesc";
+import PrLineModal from "./PrLineModal";
 import VendorSelect from "./VendorSelect";
 
 interface LineValues {
   part?: string;
   desc?: string;
+  rmk?: string;
+  rmk1?: string;
   um?: string;
   qty?: number | null;
   price?: number | null;
@@ -51,10 +55,9 @@ interface FormValues {
   taxable: boolean;
   vatClass?: string;
   divCode?: string;
-  lines: LineValues[];
 }
 
-const emptyLine: LineValues = { part: "", desc: "", um: "", qty: 1, price: 0 };
+const LINES_REQUIRED = "ต้องมีรายการสินค้าอย่างน้อย 1 รายการ";
 
 function toFormValues(pr: PrDetail): FormValues {
   return {
@@ -69,7 +72,6 @@ function toFormValues(pr: PrDetail): FormValues {
     taxable: pr.taxable,
     vatClass: pr.vatClass || undefined,
     divCode: pr.divCode || undefined,
-    lines: pr.lines.map((l) => ({ part: l.part, desc: l.desc, um: l.um, qty: l.qty, price: l.price })),
   };
 }
 
@@ -81,8 +83,33 @@ export default function PrForm({ pr }: { pr?: PrDetail }) {
   const me = useMe();
   const [form] = Form.useForm<FormValues>();
   const [saving, setSaving] = useState(false);
+  // รายการสินค้าเก็บใน state ของ component (ไม่ใช้ Form.List เพราะแก้ผ่าน modal ไม่มีช่องกรอกใน form หลัก
+  // → antd ไม่นับเป็น field ที่ลงทะเบียน ค่าจะไม่ขึ้นใน useWatch และหายตอนบันทึก)
+  const [lines, setLines] = useState<LineValues[]>(() =>
+    (pr?.lines ?? []).map((l) => ({
+      part: l.part,
+      desc: l.desc,
+      rmk: l.rmk,
+      rmk1: l.rmk1,
+      um: l.um,
+      qty: l.qty,
+      price: l.price,
+    })),
+  );
+  const [linesError, setLinesError] = useState<string>();
+  // modal รายการสินค้า: index = null → เพิ่มใหม่ / ตัวเลข → แก้ไขรายการนั้น (เก็บค่าตอนเปิด)
+  const [lineModal, setLineModal] = useState<{ index: number | null; values?: LineValues } | null>(null);
+  // object คงที่ตลอดที่ modal เปิด — ไม่อย่างนั้น modal จะเติมค่าทับสิ่งที่ผู้ใช้กำลังพิมพ์ทุกครั้งที่ฟอร์มหลัก render
+  const editingLine = useMemo(
+    () =>
+      lineModal && lineModal.index !== null
+        ? { lineNo: lineModal.index + 1, values: lineModal.values ?? {} }
+        : null,
+    [lineModal],
+  );
+  const openLine = (index: number | null) =>
+    setLineModal({ index, values: index === null ? undefined : lines[index] });
 
-  const lines = Form.useWatch("lines", form) ?? [];
   const discPct = Form.useWatch("discPct", form) ?? 0;
   const taxable = Form.useWatch("taxable", form) ?? true;
   const vatClass = Form.useWatch("vatClass", form);
@@ -97,7 +124,6 @@ export default function PrForm({ pr }: { pr?: PrDetail }) {
         taxable: true,
         discPct: 0,
         divCode: me.divCode ?? undefined,
-        lines: [{ ...emptyLine }],
       };
 
   // ค่าเริ่มต้นที่ต้องรอ master data (บริษัทหลัก, ประเภทภาษีหลัก)
@@ -110,6 +136,11 @@ export default function PrForm({ pr }: { pr?: PrDetail }) {
   }, [pr, master, form]);
 
   async function onFinish(v: FormValues) {
+    if (!lines.length) {
+      setLinesError(LINES_REQUIRED);
+      message.warning(LINES_REQUIRED);
+      return;
+    }
     const body: SavePrInput = {
       prDate: v.prDate.format("YYYY-MM-DD"),
       needDate: v.needDate?.format("YYYY-MM-DD"),
@@ -122,9 +153,11 @@ export default function PrForm({ pr }: { pr?: PrDetail }) {
       taxable: v.taxable,
       vatClass: v.vatClass,
       divCode: v.divCode,
-      lines: v.lines.map((l) => ({
+      lines: lines.map((l) => ({
         part: l.part || undefined,
         desc: (l.desc ?? "").trim(),
+        rmk: l.rmk || undefined,
+        rmk1: l.rmk1 || undefined,
         um: l.um || undefined,
         qty: Number(l.qty),
         price: Number(l.price ?? 0),
@@ -149,7 +182,10 @@ export default function PrForm({ pr }: { pr?: PrDetail }) {
       layout="vertical"
       initialValues={initialValues}
       onFinish={onFinish}
-      onFinishFailed={() => message.warning("กรุณากรอกข้อมูลให้ครบถ้วน")}
+      onFinishFailed={() => {
+        if (!lines.length) setLinesError(LINES_REQUIRED);
+        message.warning("กรุณากรอกข้อมูลให้ครบถ้วน");
+      }}
       scrollToFirstError
     >
       <Card
@@ -251,141 +287,75 @@ export default function PrForm({ pr }: { pr?: PrDetail }) {
           </Col>
         </Row>
 
-        {/* ---------- รายการสินค้า ---------- */}
+        {/* ---------- รายการสินค้า (เพิ่ม/แก้ไขผ่าน modal) ---------- */}
         <Divider titlePlacement="start">รายการสินค้า</Divider>
-        <Form.List
-          name="lines"
-          rules={[
+        <Table<LineValues>
+          size="small"
+          pagination={false}
+          dataSource={lines.map((l, i) => ({ ...l, key: i }))}
+          rowKey="key"
+          scroll={{ x: 900 }}
+          locale={{ emptyText: "ยังไม่มีรายการ — กด \"เพิ่มรายการ\"" }}
+          onRow={(_, i) => ({ onDoubleClick: () => openLine(i ?? 0), style: { cursor: "pointer" } })}
+          columns={[
+            { title: "ลำดับ", width: 60, align: "center", render: (_, __, i) => i + 1 },
+            { title: "รหัสสินค้า", dataIndex: "part", width: 140, render: (v?: string) => v?.trim() || "-" },
             {
-              validator: async (_, v: LineValues[]) => {
-                if (!v?.length) throw new Error("ต้องมีรายการสินค้าอย่างน้อย 1 รายการ");
-              },
+              title: "ชื่อสินค้า / รายละเอียด",
+              dataIndex: "desc",
+              render: (v: string, l) => <LineDesc desc={v} rmk={l.rmk} rmk1={l.rmk1} />,
+            },
+            { title: "หน่วยนับ", dataIndex: "um", width: 90 },
+            { title: "จำนวน", dataIndex: "qty", width: 110, align: "right", render: (v) => fmtNum(v) },
+            { title: "ราคา/หน่วย", dataIndex: "price", width: 130, align: "right", render: (v) => fmtNum(v) },
+            {
+              title: "จำนวนเงิน",
+              width: 130,
+              align: "right",
+              render: (_, l) => fmtNum((l.qty ?? 0) * (l.price ?? 0)),
+            },
+            {
+              title: "",
+              width: 96,
+              render: (_, __, i) => (
+                <Space size={0}>
+                  <Tooltip title="แก้ไข">
+                    <Button type="text" icon={<EditOutlined />} onClick={() => openLine(i)} />
+                  </Tooltip>
+                  <Popconfirm
+                    title={`ลบรายการที่ ${i + 1}?`}
+                    okText="ลบ"
+                    cancelText="ยกเลิก"
+                    okButtonProps={{ danger: true }}
+                    onConfirm={() => setLines((ls) => ls.filter((_, j) => j !== i))}
+                  >
+                    <Tooltip title="ลบ">
+                      <Button type="text" danger icon={<DeleteOutlined />} />
+                    </Tooltip>
+                  </Popconfirm>
+                </Space>
+              ),
             },
           ]}
-        >
-          {(fields, { add, remove }, { errors }) => (
-            <>
-              <Table
-                size="small"
-                pagination={false}
-                dataSource={fields}
-                rowKey="key"
-                scroll={{ x: 1000 }}
-                columns={[
-                  { title: "ลำดับ", width: 60, align: "center", render: (_, __, i) => i + 1 },
-                  {
-                    title: "รหัสสินค้า",
-                    width: 170,
-                    render: (_, f) => (
-                      <Form.Item name={[f.name, "part"]} noStyle>
-                        <ItemCodeInput
-                          onPick={(it) =>
-                            form.setFieldValue(["lines", f.name], {
-                              ...form.getFieldValue(["lines", f.name]),
-                              part: it.code,
-                              desc: it.name.slice(0, 120),
-                              um: it.um.slice(0, 9),
-                              price: it.price || form.getFieldValue(["lines", f.name, "price"]),
-                            })
-                          }
-                        />
-                      </Form.Item>
-                    ),
-                  },
-                  {
-                    title: "ชื่อสินค้า / รายละเอียด",
-                    render: (_, f) => (
-                      <Form.Item
-                        name={[f.name, "desc"]}
-                        rules={[{ required: true, whitespace: true, message: "กรอกรายละเอียด" }]}
-                        style={{ margin: 0 }}
-                      >
-                        <Input maxLength={120} />
-                      </Form.Item>
-                    ),
-                  },
-                  {
-                    title: "หน่วยนับ",
-                    width: 110,
-                    render: (_, f) => (
-                      <Form.Item name={[f.name, "um"]} noStyle>
-                        <AutoComplete
-                          options={master?.units.map((u) => ({ value: u }))}
-                          style={{ width: "100%" }}
-                          maxLength={9}
-                          showSearch={{
-                            filterOption: (input, o) =>
-                              String(o?.value ?? "").toLowerCase().includes(input.toLowerCase()),
-                          }}
-                        />
-                      </Form.Item>
-                    ),
-                  },
-                  {
-                    title: "จำนวน",
-                    width: 120,
-                    render: (_, f) => (
-                      <Form.Item
-                        name={[f.name, "qty"]}
-                        rules={[{ required: true, type: "number", min: 0.0001, message: "> 0" }]}
-                        style={{ margin: 0 }}
-                      >
-                        <InputNumber min={0} precision={2} style={{ width: "100%" }} />
-                      </Form.Item>
-                    ),
-                  },
-                  {
-                    title: "ราคา/หน่วย",
-                    width: 140,
-                    render: (_, f) => (
-                      <Form.Item name={[f.name, "price"]} style={{ margin: 0 }}>
-                        <InputNumber
-                          min={0}
-                          precision={2}
-                          style={{ width: "100%" }}
-                          formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                          parser={(v) => Number((v ?? "").replace(/,/g, "")) as 0}
-                        />
-                      </Form.Item>
-                    ),
-                  },
-                  {
-                    title: "จำนวนเงิน",
-                    width: 130,
-                    align: "right",
-                    render: (_, f) => {
-                      const l = lines[f.name];
-                      return fmtNum((l?.qty ?? 0) * (l?.price ?? 0));
-                    },
-                  },
-                  {
-                    title: "",
-                    width: 50,
-                    render: (_, f) => (
-                      <Button
-                        type="text"
-                        danger
-                        icon={<DeleteOutlined />}
-                        disabled={fields.length <= 1}
-                        onClick={() => remove(f.name)}
-                      />
-                    ),
-                  },
-                ]}
-              />
-              <Button
-                type="dashed"
-                icon={<PlusOutlined />}
-                onClick={() => add({ ...emptyLine })}
-                style={{ marginTop: 8 }}
-                block
-              >
-                เพิ่มรายการ
-              </Button>
-              <Form.ErrorList errors={errors} />
-            </>
-          )}
-        </Form.List>
+        />
+        <Button type="dashed" icon={<PlusOutlined />} onClick={() => openLine(null)} style={{ marginTop: 8 }} block>
+          เพิ่มรายการ
+        </Button>
+        {linesError && <Typography.Text type="danger">{linesError}</Typography.Text>}
+
+        <PrLineModal
+          open={!!lineModal}
+          editing={editingLine}
+          nextLineNo={lines.length + 1}
+          units={master?.units ?? []}
+          onCancel={() => setLineModal(null)}
+          onSave={(values, keepOpen) => {
+            const index = lineModal?.index ?? null;
+            setLines((ls) => (index !== null ? ls.map((l, j) => (j === index ? values : l)) : [...ls, values]));
+            setLinesError(undefined);
+            if (!keepOpen) setLineModal(null);
+          }}
+        />
 
         {/* ---------- ราคา / ส่วนลด / ภาษี ---------- */}
         <Divider titlePlacement="start">ราคา / ส่วนลด / ภาษี</Divider>

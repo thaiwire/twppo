@@ -5,6 +5,7 @@ import { App, Button, Card, Col, Descriptions, Form, Input, Row, Tag, Typography
 import { useState } from "react";
 import { useAuth } from "@/components/AuthContext";
 import { api } from "@/lib/api";
+import { MODULE_CODES, MODULES } from "@/lib/modules";
 import type { Me } from "@/lib/types";
 
 interface PasswordForm {
@@ -64,8 +65,15 @@ export default function ProfilePage() {
                 label: "สิทธิ์",
                 children: (
                   <>
-                    <Tag>{me.role}</Tag>
-                    {me.canApprove && <Tag color="green">อนุมัติ PR ได้</Tag>}
+                    {me.isAdmin && <Tag color="red">admin (ทุก module)</Tag>}
+                    {MODULE_CODES.filter((m) => me.modules[m]).map((m) => (
+                      <Tag key={m} color={me.modules[m] === "manager" ? "blue" : undefined}>
+                        {MODULES[m].name}: {me.modules[m]}
+                      </Tag>
+                    ))}
+                    {!me.isAdmin && !MODULE_CODES.some((m) => me.modules[m]) && (
+                      <Tag>ยังไม่ได้รับสิทธิ์ module ใด</Tag>
+                    )}
                   </>
                 ),
               },

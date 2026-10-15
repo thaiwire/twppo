@@ -1,12 +1,14 @@
 "use client";
 
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
-import { Alert, App, Button, Card, Form, Skeleton, Space, Typography } from "antd";
+import { Alert, App, Button, Card, Form, Result, Skeleton, Space, Tag, Typography } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useMe } from "@/components/AuthContext";
 import { invalidateMaster } from "@/lib/master";
+import { can, MODULES, type ModuleCode } from "@/lib/modules";
 
 interface Props {
   /** ชื่อข้อมูล เช่น "ผู้ขาย" */
@@ -20,6 +22,8 @@ interface Props {
   /** ช่องกรอก (อยู่ภายใน <Form> ใช้ Form.useFormInstance ได้) */
   children: React.ReactNode;
   maxWidth?: number;
+  /** บันทึกได้เฉพาะระดับ manager ของ module นี้ (ระดับ user = ดูอย่างเดียว) — ไม่ระบุ = บันทึกได้เสมอ */
+  module?: ModuleCode;
 }
 
 type Loaded<F> = { code: string; record?: F & { updatedBy?: string; updatedAt?: string }; error?: string };
@@ -32,7 +36,10 @@ export default function MasterFormPage<F extends object>({
   code,
   children,
   maxWidth = 1000,
+  module,
 }: Props) {
+  const me = useMe();
+  const readOnly = !!module && !can(me, module, "manager");
   const router = useRouter();
   const { message } = App.useApp();
   const [form] = Form.useForm<F>();
@@ -78,6 +85,17 @@ export default function MasterFormPage<F extends object>({
     }
   }
 
+  if (readOnly && !editing) {
+    return (
+      <Result
+        status="403"
+        title="ไม่มีสิทธิ์เพิ่มข้อมูล"
+        subTitle={`ต้องมีสิทธิ์ระดับ manager ใน module ${MODULES[module!].name}`}
+        extra={<Link href={basePath}><Button type="primary">กลับหน้ารายการ</Button></Link>}
+      />
+    );
+  }
+
   if (editing && !code) {
     return (
       <Alert
@@ -100,7 +118,7 @@ export default function MasterFormPage<F extends object>({
     );
   }
 
-  const header = editing ? `แก้ไข${title} ${code.trim()}` : `เพิ่ม${title}`;
+  const header = readOnly ? `${title} ${code!.trim()}` : editing ? `แก้ไข${title} ${code.trim()}` : `เพิ่ม${title}`;
 
   return (
     <Form<F>
@@ -109,28 +127,36 @@ export default function MasterFormPage<F extends object>({
       onFinish={onFinish}
       onFinishFailed={() => message.warning("กรุณากรอกข้อมูลให้ครบถ้วน")}
       scrollToFirstError
+      disabled={readOnly}
     >
       <Card
         style={{ maxWidth }}
         title={
           <Space>
             <Link href={basePath}>
-              <Button type="text" icon={<ArrowLeftOutlined />} />
+              <Button type="text" icon={<ArrowLeftOutlined />} disabled={false} />
             </Link>
             <Typography.Title level={4} style={{ margin: 0 }}>
               {header}
             </Typography.Title>
+            {readOnly && <Tag>ดูอย่างเดียว</Tag>}
           </Space>
         }
         extra={
-          <Space>
+          readOnly ? (
             <Link href={basePath}>
-              <Button>ยกเลิก</Button>
+              <Button disabled={false}>กลับหน้ารายการ</Button>
             </Link>
-            <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving} disabled={editing && !current}>
-              บันทึก
-            </Button>
-          </Space>
+          ) : (
+            <Space>
+              <Link href={basePath}>
+                <Button>ยกเลิก</Button>
+              </Link>
+              <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving} disabled={editing && !current}>
+                บันทึก
+              </Button>
+            </Space>
+          )
         }
       >
         {editing && !current ? <Skeleton active paragraph={{ rows: 8 }} /> : children}

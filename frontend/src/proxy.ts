@@ -11,7 +11,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
   if (hasToken && pathname === "/") {
-    return NextResponse.redirect(new URL("/pr", request.url));
+    return NextResponse.redirect(new URL("/home", request.url));
   }
   return NextResponse.next();
 }
